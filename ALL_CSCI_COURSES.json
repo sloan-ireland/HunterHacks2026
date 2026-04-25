@@ -1,0 +1,296 @@
+[
+    {
+        "course_name": "CSCI 12100",
+        "title_name": "CSCI 12100 - Computers & Money:Quant",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 12700",
+        "title_name": "CSCI 12700 - Introduction: Computer Science",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 13200",
+        "title_name": "CSCI 13200 - Practical Unix Programming Lab",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 13500",
+        "title_name": "CSCI 13500 - Software Analysis and Design 1",
+        "prerequisites": "CSCI 12700 or equivalent, and; MATH 12400, or MATH 12500, or MATH 12550, or MATH 15000, or MATH 15200, or MATH 15500.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 15000",
+        "title_name": "CSCI 15000 - Discrete Structures",
+        "prerequisites": "MATH 12400, MATH 12500, MATH 12550, MATH 15000 or MATH 15500.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 16000",
+        "title_name": "CSCI 16000 - Computer Architecture 1",
+        "prerequisites": "CSCI 12700 and CSCI 15000.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 18100",
+        "title_name": "CSCI 18100 - Independent Workshop",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 18200",
+        "title_name": "CSCI 18200 - Independent Workshop",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 18300",
+        "title_name": "CSCI 18300 - Independent Workshop",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 22700",
+        "title_name": "CSCI 22700 - Programming Methods",
+        "prerequisites": "CSCI 12700",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 23200",
+        "title_name": "CSCI 23200 - Rel Databases & SQL Programg",
+        "prerequisites": "CSCI 12700 or CSCI 13200.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 23500",
+        "title_name": "CSCI 23500 - Software Analysis and Design 2",
+        "prerequisites": "CSCI 13500 and CSCI 15000 and MATH 15000, all with a C or better.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 26000",
+        "title_name": "CSCI 26000 - Computer Architecture 2",
+        "prerequisites": "CSCI 13500 and (CSCI 16000 or CSCI 24500) and MATH 15000 all with a grade of D or better.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 26500",
+        "title_name": "CSCI 26500 - Computer Theory 1",
+        "prerequisites": "(CSCI 16000 or CSCI 14500) and MATH 15000, all with a C or better. Math, Reading and Writing Proficient.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 26700",
+        "title_name": "CSCI 26700 - Microprocessing & Embedded Sys",
+        "prerequisites": "CSCI 13300 or CSCI 26000",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 33500",
+        "title_name": "CSCI 33500 - Software Analysis and Design 3",
+        "prerequisites": "CSCI 23500 and MATH 15500, all with a C or better.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 34000",
+        "title_name": "CSCI 34000 - Operating Systems",
+        "prerequisites": "(CSCI 24500 or CSCI 26000) and CSCI 23500 and (STAT 11300 or STAT 21300) and MATH 155.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 36000",
+        "title_name": "CSCI 36000 - Computer Architecture 3",
+        "prerequisites": "(CSCI 24500 or CSCI 26000) and MATH 15500.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 37200",
+        "title_name": "CSCI 37200 - Logic and Computers",
+        "prerequisites": "CSCI 15000 or PHILO 27500 or MATH 27500 or CSCI 27500",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 39100",
+        "title_name": "CSCI 39100 - Indep Study Computer Science",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 39200",
+        "title_name": "CSCI 39200 - Indep Study Computer Science",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 39300",
+        "title_name": "CSCI 39300 - Indep Study Computer Science",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 39533",
+        "title_name": "CSCI 39533 - Flutter App Dev w Intr ML & AI",
+        "prerequisites": "CSCI 23500.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 39541",
+        "title_name": "CSCI 39541 - Basics of Game Engines",
+        "prerequisites": "CSCI 33500 and CSCI 26000.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 39548",
+        "title_name": "CSCI 39548 - Practical Web Development",
+        "prerequisites": "CSCI 23500.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 39579",
+        "title_name": "CSCI 39579 - Data Visualization",
+        "prerequisites": "CSCI 23500 and (MATH 16000 or MATH 26000).",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 41500",
+        "title_name": "CSCI 41500 - Data Communications & Networks",
+        "prerequisites": "CSCI 33500 and 34000 all with a C or better.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 49311",
+        "title_name": "CSCI 49311 - Undergrad Research Training",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 49362",
+        "title_name": "CSCI 49362 - Natural Language Processing",
+        "prerequisites": "CSCI 23500 and CSCI 26500 and (STAT 11300 or STAT 21300), all with a C or better.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 49375",
+        "title_name": "CSCI 49375 - Network Security",
+        "prerequisites": "CSCI 33500",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 49376",
+        "title_name": "CSCI 49376 - Big Data Technology",
+        "prerequisites": "CSCI 33500",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 49379",
+        "title_name": "CSCI 49379 - Intro to Blockchain",
+        "prerequisites": "CSCI 33500 and CSCI 26500.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 49381",
+        "title_name": "CSCI 49381 - Intro to Computer Security",
+        "prerequisites": "CSCI 33500",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 49391",
+        "title_name": "CSCI 49391 - Fundatns of Game Theory for CS",
+        "prerequisites": "CSCI 33500",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 49393",
+        "title_name": "CSCI 49393 - Ethics in AI",
+        "prerequisites": "CSCI 23500.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 49600",
+        "title_name": "CSCI 49600 - Supervised Research",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 49700",
+        "title_name": "CSCI 49700 - Supervised Research",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 49800",
+        "title_name": "CSCI 49800 - Supervised Research",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 49900",
+        "title_name": "CSCI 49900 - Advnc Apl:Cpstne Maj",
+        "prerequisites": "CSCI 33500 and CSCI 34000. Only open to Computer Sci and MHC Computer Sci majors.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 70900",
+        "title_name": "CSCI 70900 - Programming in High-Level Lang",
+        "prerequisites": "Only open to students in CSEDU-MSED or CSCIEDU-AC Academic Plans.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 72200",
+        "title_name": "CSCI 72200 - Form Meth Programming Language",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 73000",
+        "title_name": "CSCI 73000 - Computer Systems",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 77300",
+        "title_name": "CSCI 77300 - Data Comm & Networks",
+        "prerequisites": "CSCI 70100.",
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 77800",
+        "title_name": "CSCI 77800 - Ethics and Computer Science",
+        "prerequisites": "/Corequisite: CSCI 70300.",
+        "corequisites": "CSCI 70300."
+    },
+    {
+        "course_name": "CSCI 79300",
+        "title_name": "CSCI 79300 - Independent Study Comp Science",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 79502",
+        "title_name": "CSCI 79502 - Sem:Machine Learning",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 79529",
+        "title_name": "CSCI 79529 - Intro to Computer Security",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 79800",
+        "title_name": "CSCI 79800 - Project in Computer Science",
+        "prerequisites": null,
+        "corequisites": null
+    },
+    {
+        "course_name": "CSCI 79900",
+        "title_name": "CSCI 79900 - Thesis Research Computer Sci",
+        "prerequisites": null,
+        "corequisites": null
+    }
+]

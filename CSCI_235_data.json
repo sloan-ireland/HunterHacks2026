@@ -1,0 +1,6 @@
+{
+    "course_name": "CSCI 235",
+    "title_name": "CSCI 23500 - Software Analysis and Design 2",
+    "prerequisites": "CSCI 13500 and CSCI 15000 and MATH 15000, all with a C or better.",
+    "corequisites": null
+}
