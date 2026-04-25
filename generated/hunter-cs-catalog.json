@@ -1,0 +1,883 @@
+{
+  "scrapedAt": "2026-04-25T20:32:18.981771+00:00",
+  "source": {
+    "college": "Hunter College",
+    "major": "Computer Science BA",
+    "programUrl": "https://hunter-undergraduate.catalog.cuny.edu/programs/COMPSCI-BA",
+    "implementation": "Python + Playwright"
+  },
+  "program": {
+    "planCode": "COMPSCI-BA",
+    "longName": "Computer Science BA",
+    "degreeDesignation": "BA - Bachelor of Arts",
+    "creditsRequired": 40
+  },
+  "requirementBlocks": [
+    {
+      "id": "lkRI0qXK",
+      "name": "Major Requirements - Overall",
+      "type": "Completion Requirement",
+      "credits": 40,
+      "notes": [
+        "<ul><li><p>The Computer Science major consists of 40-64 credits in CSCI and MATH/STAT courses.</p></li><li><p>Based on placement exams or transferred courses, students may place into some more advanced Mathematics and Statistics courses without taking Hunter College prerequisites. </p></li><li><p>Students may obtain Credit by Examination for CSCI 12700, CSCI 13500 AND CSCI 15000.</p></li><li><p>Please note that the department of Computer Science does not accept  P/NC grades in courses required for the Major.</p></li><li><p>MATH, STAT, BIOL and CHEM courses can be counted for credit in more than one program.</p></li></ul>"
+      ],
+      "groups": []
+    },
+    {
+      "id": "GDSCLEPi",
+      "name": "Major Requirements - Required Math Courses",
+      "type": "Completion Requirement",
+      "credits": null,
+      "notes": [
+        "<ul><li><p> <a href=\"/courses/1468551\" class=\"custom-link\" data-course-id=\"1468551\">course</a>- Mathematical Reasoning Workshop unless students earn a grade of B- or above in <a href=\"/courses/1370031\" class=\"custom-link\" data-course-id=\"1370031\">course</a>.</p></li></ul>"
+      ],
+      "groups": [
+        {
+          "logic": "or",
+          "courseGroupIds": [
+            "0298771",
+            "1331921"
+          ],
+          "courseCodes": [
+            "MATH 10100",
+            "MATH 101EN"
+          ]
+        },
+        {
+          "logic": "or",
+          "courseGroupIds": [
+            "1473701"
+          ],
+          "courseCodes": [
+            "MATH 10150"
+          ]
+        },
+        {
+          "logic": "or",
+          "courseGroupIds": [
+            "1473711",
+            "0298901",
+            "1370031"
+          ],
+          "courseCodes": [
+            "MATH 12400",
+            "MATH 12500",
+            "MATH 12550"
+          ]
+        },
+        {
+          "logic": "or",
+          "courseGroupIds": [
+            "0298961",
+            "0299001"
+          ],
+          "courseCodes": [
+            "MATH 15000",
+            "MATH 15500"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "xdh9eXkd",
+      "name": "Major Requirements - Computer Science Concentration",
+      "type": "Completion Requirement",
+      "credits": 28,
+      "notes": [],
+      "groups": [
+        {
+          "logic": "and",
+          "courseGroupIds": [
+            "0244931"
+          ],
+          "courseCodes": [
+            "CSCI 12700"
+          ]
+        },
+        {
+          "logic": "and",
+          "courseGroupIds": [
+            "0244971"
+          ],
+          "courseCodes": [
+            "CSCI 13500"
+          ]
+        },
+        {
+          "logic": "and",
+          "courseGroupIds": [
+            "0245011"
+          ],
+          "courseCodes": [
+            "CSCI 15000"
+          ]
+        },
+        {
+          "logic": "and",
+          "courseGroupIds": [
+            "0299031"
+          ],
+          "courseCodes": [
+            "MATH 16000"
+          ]
+        },
+        {
+          "logic": "and",
+          "courseGroupIds": [
+            "0245031"
+          ],
+          "courseCodes": [
+            "CSCI 16000"
+          ]
+        },
+        {
+          "logic": "and",
+          "courseGroupIds": [
+            "0347351"
+          ],
+          "courseCodes": [
+            "STAT 21300"
+          ]
+        },
+        {
+          "logic": "and",
+          "courseGroupIds": [
+            "0245171"
+          ],
+          "courseCodes": [
+            "CSCI 23500"
+          ]
+        },
+        {
+          "logic": "and",
+          "courseGroupIds": [
+            "0245211"
+          ],
+          "courseCodes": [
+            "CSCI 26000"
+          ]
+        },
+        {
+          "logic": "and",
+          "courseGroupIds": [
+            "0245221"
+          ],
+          "courseCodes": [
+            "CSCI 26500"
+          ]
+        },
+        {
+          "logic": "and",
+          "courseGroupIds": [
+            "0245511"
+          ],
+          "courseCodes": [
+            "CSCI 33500"
+          ]
+        },
+        {
+          "logic": "and",
+          "courseGroupIds": [
+            "0245521"
+          ],
+          "courseCodes": [
+            "CSCI 34000"
+          ]
+        },
+        {
+          "logic": "and",
+          "courseGroupIds": [
+            "0246431"
+          ],
+          "courseCodes": [
+            "CSCI 49900"
+          ]
+        }
+      ]
+    }
+  ],
+  "courses": [
+    {
+      "code": "CSCI 12700",
+      "name": "Introduction to Computer Science",
+      "credits": 3,
+      "prerequisites": [],
+      "corequisites": [],
+      "prerequisiteText": "",
+      "corequisiteText": "",
+      "requisitesText": "",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "core",
+      "description": "This course presents an overview of computer science (CS) with an emphasis on problem-solving and computational thinking through 'coding': computer programming for beginners. Other topics include: organization of hardware, software, and how information is structured on contemporary computing devices. This course is pre-requisite to several introductory core courses in the CS Major. The course is also required for the CS minor. MATH 12500 or higher is strongly recommended as a co-req for intended Majors.",
+      "difficulty": "introductory",
+      "subject": "CSCI",
+      "courseNumber": "12700",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0244931",
+      "courseGroupId": "0244931",
+      "requirementGroupId": "",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "CSCI 13500",
+      "name": "Software Analysis and Design 1",
+      "credits": 4,
+      "prerequisites": [
+        "CSCI 12700",
+        "MATH 12400",
+        "MATH 12500",
+        "MATH 12550",
+        "MATH 15000",
+        "MATH 15200",
+        "MATH 15500"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "CSCI 12700 or equivalent, and; MATH 12400, or MATH 12500, or MATH 12550, or MATH 15000, or MATH 15200, or MATH 15500.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisites: CSCI 12700 or equivalent, and; MATH 12400, or MATH 12500, or MATH 12550, or MATH 15000, or MATH 15200, or MATH 15500.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "core",
+      "description": "This course for prospective computer science majors and minors concentrates onproblem solving techniques using a high-level programming language.",
+      "difficulty": "introductory",
+      "subject": "CSCI",
+      "courseNumber": "13500",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0244971",
+      "courseGroupId": "0244971",
+      "requirementGroupId": "033783",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "CSCI 15000",
+      "name": "Discrete Structures",
+      "credits": 4,
+      "prerequisites": [
+        "MATH 12400",
+        "MATH 12500",
+        "MATH 12550",
+        "MATH 15000",
+        "MATH 15500"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "MATH 12400, MATH 12500, MATH 12550, MATH 15000 or MATH 15500.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequsite: MATH 12400, MATH 12500, MATH 12550, MATH 15000 or MATH 15500.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "core",
+      "description": "Mathematical background required for computer science. Sets, relations, cardinality, propositional calculus, discrete functions, truth tables, induction, combinatorics.",
+      "difficulty": "introductory",
+      "subject": "CSCI",
+      "courseNumber": "15000",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0245011",
+      "courseGroupId": "0245011",
+      "requirementGroupId": "033134",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "CSCI 16000",
+      "name": "Computer Architecture 1",
+      "credits": 3,
+      "prerequisites": [
+        "CSCI 12700",
+        "CSCI 15000"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "CSCI 12700 and CSCI 15000.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisites: CSCI 12700 and CSCI 15000.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "core",
+      "description": "Computer Architecture 1",
+      "difficulty": "introductory",
+      "subject": "CSCI",
+      "courseNumber": "16000",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0245031",
+      "courseGroupId": "0245031",
+      "requirementGroupId": "014073",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "CSCI 23200",
+      "name": "Relational Databases and SQL Programming, with Lab",
+      "credits": 3,
+      "prerequisites": [
+        "CSCI 12700",
+        "CSCI 13200"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "CSCI 12700 or CSCI 13200.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisite: CSCI 12700 or CSCI 13200.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "elective",
+      "description": "This is an introduction to elementary database concepts and SQL (Structure Query Language), the standard language for communicating with most database systems. This is a pragmatic course with an emphasis on skills acquisition; students will learn how to get things done quickly and easily in a database environment. This course teaches students the principles underlying the use of SQL to retrieve and manipulate data from large databases. Students learn fundamental principles that can be applied to any database environment that supports SQL, but the PERL API for MY-SQL is the software planned for instruction here. Students are given a conceptual overview of the mathematics underlying relational databases and the UML (Univeral Modeling Language) framework for database design, as well as a practical introduciton to database systems, and the ways SQL retrieves and organizes information from them. For large, pre-existing databases without customized interfaces (including many under development by biologists here at Hunter), SQL is either the standard access language or a more flexible and incisive alternative. The primary objective is to enable student",
+      "difficulty": "foundational",
+      "subject": "CSCI",
+      "courseNumber": "23200",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0245151",
+      "courseGroupId": "0245151",
+      "requirementGroupId": "014074",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "CSCI 23500",
+      "name": "Software Analysis and Design 2",
+      "credits": 3,
+      "prerequisites": [
+        "CSCI 13500",
+        "CSCI 15000",
+        "MATH 15000"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "CSCI 13500 and CSCI 15000 and MATH 15000, all with a C or better.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisites: CSCI 13500 and CSCI 15000 and MATH 15000, all with a C or better.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "core",
+      "description": "Representation of information in computers, including process and data abstraction techniques. The course covers static and dynamic storage methods, lists, stacks, queues, binary trees, recursion, analysis of simple algorithms, and some searching and sorting algorithms.",
+      "difficulty": "foundational",
+      "subject": "CSCI",
+      "courseNumber": "23500",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0245171",
+      "courseGroupId": "0245171",
+      "requirementGroupId": "014075",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "CSCI 26000",
+      "name": "Computer Architecture 2",
+      "credits": 3,
+      "prerequisites": [
+        "CSCI 13500",
+        "CSCI 16000",
+        "CSCI 24500",
+        "MATH 15000"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "CSCI 13500 and (CSCI 16000 or CSCI 24500) and MATH 15000 all with a grade of D or better.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisites: CSCI 13500 and (CSCI 16000 or CSCI 24500) and MATH 15000 all with a grade of D or better.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "core",
+      "description": "Computer Architecture 2",
+      "difficulty": "foundational",
+      "subject": "CSCI",
+      "courseNumber": "26000",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0245211",
+      "courseGroupId": "0245211",
+      "requirementGroupId": "014079",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "CSCI 26500",
+      "name": "Computer Theory 1",
+      "credits": 3,
+      "prerequisites": [
+        "CSCI 16000",
+        "CSCI 14500",
+        "MATH 15000"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "(CSCI 16000 or CSCI 14500) and MATH 15000, all with a C or better. Math, Reading and Writing Proficient.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisites: (CSCI 16000 or CSCI 14500) and MATH 15000, all with a C or better. Math, Reading and Writing Proficient.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "core",
+      "description": "Recursion, regular sets, regular expressions, finite automata, context-free grammars, pushdown automata.",
+      "difficulty": "foundational",
+      "subject": "CSCI",
+      "courseNumber": "26500",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0245221",
+      "courseGroupId": "0245221",
+      "requirementGroupId": "014080",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "CSCI 26700",
+      "name": "Micro Processing & Embedded System",
+      "credits": 3,
+      "prerequisites": [],
+      "corequisites": [],
+      "prerequisiteText": "CSCI 133 or 260",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisite: CSCI 133 or 260",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "elective",
+      "description": "Micro Processing & Embedded System",
+      "difficulty": "foundational",
+      "subject": "CSCI",
+      "courseNumber": "26700",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0245231",
+      "courseGroupId": "0245231",
+      "requirementGroupId": "014083",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "CSCI 33500",
+      "name": "Software Analysis and Design 3",
+      "credits": 3,
+      "prerequisites": [
+        "CSCI 23500",
+        "MATH 15500"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "CSCI 23500 and MATH 15500, all with a C or better.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisites: CSCI 23500 and MATH 15500, all with a C or better.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "core",
+      "description": "The design and analysis of various types of algorithms, including searching, sorting, graph and tree algorithms. Problem-solving techniques. Worst and average case behavior analysis, and optimality. Polynomial time complexity classes and theory, including NP-completeness.",
+      "difficulty": "intermediate",
+      "subject": "CSCI",
+      "courseNumber": "33500",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0245511",
+      "courseGroupId": "0245511",
+      "requirementGroupId": "014086",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "CSCI 34000",
+      "name": "Operating Systems",
+      "credits": 3,
+      "prerequisites": [
+        "CSCI 24500",
+        "CSCI 26000",
+        "CSCI 23500",
+        "STAT 11300",
+        "STAT 21300"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "(CSCI 24500 or CSCI 26000) and CSCI 23500 and (STAT 11300 or STAT 21300) and MATH 155.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisites: (CSCI 24500 or CSCI 26000) and CSCI 23500 and (STAT 11300 or STAT 21300) and MATH 155.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "core",
+      "description": "Definition of functions and components of operating systems. Survey of contemporary multiprocessing/multi-programming systems. Exploration of systems programs: their design, internal structure, and implementation.",
+      "difficulty": "intermediate",
+      "subject": "CSCI",
+      "courseNumber": "34000",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0245521",
+      "courseGroupId": "0245521",
+      "requirementGroupId": "015017",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "CSCI 35000",
+      "name": "Artificial Intelligence",
+      "credits": 3,
+      "prerequisites": [
+        "CSCI 33500",
+        "STAT 21300"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "CSCI 33500 and STAT 21300.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisite: CSCI 33500 and STAT 21300.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "elective",
+      "description": "A survey of artificial intelligence including search and control, knowledge representation, logic and theorem proving, learning, natural language, and AI programming.",
+      "difficulty": "intermediate",
+      "subject": "CSCI",
+      "courseNumber": "35000",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0245541",
+      "courseGroupId": "0245541",
+      "requirementGroupId": "035307",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "CSCI 35500",
+      "name": "Introduction to Linear Programming",
+      "credits": 3,
+      "prerequisites": [],
+      "corequisites": [],
+      "prerequisiteText": "",
+      "corequisiteText": "",
+      "requisitesText": "",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "elective",
+      "description": "Introduction to operations research and game theory. Simplex method; inconsistency, redundancy, and degeneracy problems; two-phase method; duality; transportation problems.",
+      "difficulty": "intermediate",
+      "subject": "CSCI",
+      "courseNumber": "35500",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0245561",
+      "courseGroupId": "0245561",
+      "requirementGroupId": "",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "CSCI 38500",
+      "name": "Numerical Methods 1",
+      "credits": 3,
+      "prerequisites": [],
+      "corequisites": [],
+      "prerequisiteText": "",
+      "corequisiteText": "",
+      "requisitesText": "Prerequistes: CSCI 13500 and (MATH 16000 or MATH 26000) all with a C or better.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "elective",
+      "description": "Accuracy and precision, convergence, iterative and direct methods. Topics selected from: solution of polynomial equations and linear systems of equations, curve fitting and function approximation, interpolation, differentiation and integration, differential equations.",
+      "difficulty": "intermediate",
+      "subject": "CSCI",
+      "courseNumber": "38500",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0245651",
+      "courseGroupId": "0245651",
+      "requirementGroupId": "014099",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "CSCI 46000",
+      "name": "Advanced Programming Languages",
+      "credits": 3,
+      "prerequisites": [
+        "CSCI 26500",
+        "CSCI 33500"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "CSCI 26500 and CSCI 33500, both with a C or better.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisites: CSCI 26500 and CSCI 33500, both with a C or better.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "elective",
+      "description": "Survey course on the design and implementation of modern programming languages. Includes object-oriented, functional, logic, and concurrent/distributed paradigms.",
+      "difficulty": "advanced",
+      "subject": "CSCI",
+      "courseNumber": "46000",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0246091",
+      "courseGroupId": "0246091",
+      "requirementGroupId": "014145",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "CSCI 49900",
+      "name": "Advanced Applications: A Capstone for Majors",
+      "credits": 4,
+      "prerequisites": [
+        "CSCI 33500",
+        "CSCI 34000"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "CSCI 33500 and CSCI 34000. Only open to Computer Sci and MHC Computer Sci majors.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisites: CSCI 33500 and CSCI 34000. Only open to Computer Sci and MHC Computer Sci majors.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "core",
+      "description": "Advanced Applications: A Capstone for Majors",
+      "difficulty": "advanced",
+      "subject": "CSCI",
+      "courseNumber": "49900",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0246431",
+      "courseGroupId": "0246431",
+      "requirementGroupId": "014236",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "MATH 10100",
+      "name": "Algebra for College Students",
+      "credits": 3,
+      "prerequisites": [],
+      "corequisites": [],
+      "prerequisiteText": "",
+      "corequisiteText": "",
+      "requisitesText": "Requisites for MATH 10100",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "math",
+      "description": "Topics in algebra, graphing and functions. Includes: algebraic and graphical solutions to systems of equations and inequalities; absolute value, polynomial, rational and radical expressions and equations; complex numbers; the function concept; introduction to polynomial, rational and exponential functions and their graphs.",
+      "difficulty": "introductory",
+      "subject": "MATH",
+      "courseNumber": "10100",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0298771",
+      "courseGroupId": "0298771",
+      "requirementGroupId": "017140",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "MATH 10150",
+      "name": "Mastery of Symbolic Computation",
+      "credits": 1,
+      "prerequisites": [
+        "MATH 10100",
+        "MATH 12400"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "MATH 10100 or MATH 101EN with a grade of C or better. Not credited for students who have previously passed any course number at or above MATH 12400.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisite: MATH 10100 or MATH 101EN with a grade of C or better. Not credited for students who have previously passed any course number at or above MATH 12400.",
+      "semestersOffered": [
+        "all terms"
+      ],
+      "category": "math",
+      "description": "This online course focuses on developing increased mastery of symbolic computational skills and strategies needed for manipulating symbols and solving equations and inequalities in precalculus-level mathematics and elementary statistics.",
+      "difficulty": "introductory",
+      "subject": "MATH",
+      "courseNumber": "10150",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/1473701",
+      "courseGroupId": "1473701",
+      "requirementGroupId": "032164",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "MATH 101EN",
+      "name": "Algebra College Stud-Enhanced",
+      "credits": 3,
+      "prerequisites": [
+        "MATH 10100"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "Appropriate score on the Hunter Math Placement Exam or a score of less than 40 on MATH Accuplacer Exam. Not open to students who have taken MATH 10100.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisite: Appropriate score on the Hunter Math Placement Exam or a score of less than 40 on MATH Accuplacer Exam. Not open to students who have taken MATH 10100.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "math",
+      "description": "Topics in algebra, graphing and functions including: algebraic and graphical solutions to systems of equations and inequalities; absolute value, polynomial, rational, and radical expressions and equations; complex numbers; the function concept; introduction to polynomial, rational, and exponential functions and their graphs. Also includes elementary algebra material which is necessary background material to be successful in college algebra. Not open to students who have taken MATH 10100.",
+      "difficulty": "introductory",
+      "subject": "MATH",
+      "courseNumber": "101EN",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/1331921",
+      "courseGroupId": "1331921",
+      "requirementGroupId": "030847",
+      "consent": "Department Consent Required"
+    },
+    {
+      "code": "MATH 12400",
+      "name": "College Algebra and Trigonometry",
+      "credits": 4,
+      "prerequisites": [
+        "MATH 10100",
+        "MATH 12500",
+        "MATH 12550"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "MATH 10100/MATH 101EN with a grade of C or better or the appropriate score on the Hunter Math Placement Exam. Not open to students who have taken MATH 12500 or MATH 12550.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisites: MATH 10100/MATH 101EN with a grade of C or better or the appropriate score on the Hunter Math Placement Exam. Not open to students who have taken MATH 12500 or MATH 12550.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "math",
+      "description": "This course is replacing the course MATH 12500 (STEM) for students who do not intend to take calculus. Functions and their graphs; linear, quadratic, polynomial, rational, exponential, logarithmic, and trigonometric functions; topics in trigonometry; graphical and analytical solutions to systems of equations. Students who would plan on taking calculus should register for MATH 12550 (STEM) instead of this course. Students who complete this course will need to register for MATH 14000 in order to take calculus. This course is equivalent to Math 12500 for grade replacement purposes.",
+      "difficulty": "introductory",
+      "subject": "MATH",
+      "courseNumber": "12400",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/1473711",
+      "courseGroupId": "1473711",
+      "requirementGroupId": "034249",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "MATH 12500",
+      "name": "Precalculus",
+      "credits": 4,
+      "prerequisites": [
+        "MATH 05000",
+        "MATH 10100",
+        "MATH 12000",
+        "MATH 13000"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "(MATH 05000 or MATH 10100 with a C or better) or MATH 12000 or MATH 13000 or Accuplacer Test (Math 6) 61- 79 or appropriate Math Placement Score.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisites: (MATH 05000 or MATH 10100 with a C or better) or MATH 12000 or MATH 13000 or Accuplacer Test (Math 6) 61- 79 or appropriate Math Placement Score.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "math",
+      "description": "Functions and their graphs: polynomial, rational, exponential, logarithmic, and trigonometric functions; conic sections; topics in trigonometry; graphical and analytical solutions to systems of equations and inequalities.",
+      "difficulty": "introductory",
+      "subject": "MATH",
+      "courseNumber": "12500",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0298901",
+      "courseGroupId": "0298901",
+      "requirementGroupId": "015605",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "MATH 12550",
+      "name": "Precalculus with Workshop",
+      "credits": 4,
+      "prerequisites": [
+        "MATH 10150",
+        "MATH 12500"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "Math 10100/MATH 101EN with a grade of B- or better OR MATH 10150 with a grade of C or better; or the appropriate score on the Hunter Math Placement exam. Not open to students who have taken MATH 12500.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisites: Math 10100/MATH 101EN with a grade of B- or better OR MATH 10150 with a grade of C or better; or the appropriate score on the Hunter Math Placement exam. Not open to students who have taken MATH 12500.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "math",
+      "description": "This course replaces the course MATH 12500 (STEM) for students who intend to take calculus. It is designed to develop an understanding of topics and skills which are fundamental to the study of calculus and other science classes. The topics covered are: linear, quadratic, polynomial, rational, exponential, logarithmic, and trigonometric functions and their graphs and applications; the Fundamental Theorem of Algebra; sequences, sums, and the Binomial Theorem. In addition to lecture, students are also required to attend a 50-minute recitation session once a week. This course is equivalent to Math 12500 for grade replacement purposes.",
+      "difficulty": "introductory",
+      "subject": "MATH",
+      "courseNumber": "12550",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/1370031",
+      "courseGroupId": "1370031",
+      "requirementGroupId": "031110",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "MATH 15000",
+      "name": "Calculus I",
+      "credits": 4,
+      "prerequisites": [
+        "MATH 12550",
+        "MATH 12400",
+        "MATH 12500"
+      ],
+      "corequisites": [
+        "MATH 14000"
+      ],
+      "prerequisiteText": "MATH 12550 with a grade of B- or better or MATH 12400, MATH 12500, or MATH 12550, with a grade of C or better",
+      "corequisiteText": "MATH 14000; or appropriate score on Hunter Math Placement Exam.",
+      "requisitesText": "Prereq: MATH 12550 with a grade of B- or better or MATH 12400, MATH 12500, or MATH 12550, with a grade of C or better, AND coreq MATH 14000; or appropriate score on Hunter Math Placement Exam.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "math",
+      "description": "Limits, continuity, differentiation and integration of elementary functions and trigonometric functions, applications.",
+      "difficulty": "introductory",
+      "subject": "MATH",
+      "courseNumber": "15000",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0298961",
+      "courseGroupId": "0298961",
+      "requirementGroupId": "017146",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "MATH 15500",
+      "name": "Calculus 2",
+      "credits": 4,
+      "prerequisites": [
+        "MATH 15000",
+        "MATH 15100"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "(MATH 15000 with a C or better) or MATH 15100.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisite: (MATH 15000 with a C or better) or MATH 15100.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "math",
+      "description": "Differentiation and integration of transcendental functions, integration techniques, infinite sequences and series, improper integrals, polar coordinates.",
+      "difficulty": "introductory",
+      "subject": "MATH",
+      "courseNumber": "15500",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0299001",
+      "courseGroupId": "0299001",
+      "requirementGroupId": "015606",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "MATH 16000",
+      "name": "Matrix Algebra",
+      "credits": 3,
+      "prerequisites": [
+        "MATH 12400",
+        "MATH 12500",
+        "MATH 12550"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "MATH 12400 or MATH 12500 or MATH 12550 or appropriate score on placement exam.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisite: MATH 12400 or MATH 12500 or MATH 12550 or appropriate score on placement exam.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "math",
+      "description": "Systems of linear equations, matrices, determinants, introduction to vector spaces and linear transformations, applications.",
+      "difficulty": "introductory",
+      "subject": "MATH",
+      "courseNumber": "16000",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0299031",
+      "courseGroupId": "0299031",
+      "requirementGroupId": "017148",
+      "consent": "No Special Consent Required"
+    },
+    {
+      "code": "STAT 21300",
+      "name": "Introduction to Applied Statistics",
+      "credits": 3,
+      "prerequisites": [
+        "MATH 12400",
+        "MATH 12500",
+        "MATH 12550"
+      ],
+      "corequisites": [],
+      "prerequisiteText": "MATH 12400 or MATH 12500 or MATH 12550, or appropriate score on Hunter Math Placement Exam.",
+      "corequisiteText": "",
+      "requisitesText": "Prerequisite: MATH 12400 or MATH 12500 or MATH 12550, or appropriate score on Hunter Math Placement Exam.",
+      "semestersOffered": [
+        "fall",
+        "spring"
+      ],
+      "category": "math",
+      "description": "Sampling, estimation, tests of hypotheses, including one- and two-sample t-tests, two- and three-way tables for nominal and ordinal data, linear regression, analysis of variance through two-way with interaction, appropriate statistical software.",
+      "difficulty": "foundational",
+      "subject": "STAT",
+      "courseNumber": "21300",
+      "sourceUrl": "https://hunter-undergraduate.catalog.cuny.edu/courses/0347351",
+      "courseGroupId": "0347351",
+      "requirementGroupId": "017150",
+      "consent": "No Special Consent Required"
+    }
+  ]
+}
