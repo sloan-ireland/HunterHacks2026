@@ -1,0 +1,11 @@
+Goal: Create an application that can Fea
+
+Features
+(1) Survey
+- Dropdown Menu
+- Ask the user what courses they already have taken
+    - Add a cookies thing to save useer rinput
+(2) Road Map Generation
+- List mandatory courses
+- When to take take them
+
