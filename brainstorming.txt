@@ -1,4 +1,4 @@
-Goal: Create an application that can Fea
+Goal: Create an application that can generate a road map for Hunter CS majors
 
 Features
 (1) Survey
