@@ -17,7 +17,7 @@ export default function AuthPanel({
     "Signed in";
 
   return (
-    <div className="metric-card auth-card">
+    <div className="auth-card">
       <span className="metric-label">Account</span>
 
       {user ? (
@@ -43,7 +43,7 @@ export default function AuthPanel({
       ) : (
         <>
           <strong>Not signed in</strong>
-          <span>Sign in to save this plan to your account later.</span>
+          <span>Sign in to save this plan to your account and bring it back later.</span>
           <button type="button" className="auth-button" onClick={onSignIn} disabled={loading}>
             {loading ? "Connecting..." : "Sign in with Google"}
           </button>

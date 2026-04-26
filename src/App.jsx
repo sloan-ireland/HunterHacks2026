@@ -6,7 +6,7 @@ import CourseDetail from "./components/CourseDetail";
 import DependencyGraph from "./components/DependencyGraph";
 import SemesterPlan from "./components/SemesterPlan";
 import WhatIfPanel from "./components/WhatIfPanel";
-import { DATASET_OPTIONS, getDatasetById } from "./data/datasetRegistry";
+import { DATASET_OPTIONS } from "./data/datasetRegistry";
 import { createCatalog, demoScenarios } from "./lib/catalog";
 import { buildGraphLayout, generateSemesterPlan, getCourseStatuses } from "./lib/planner";
 import { supabase } from "./lib/supabaseClient";
@@ -31,6 +31,29 @@ const EMPTY_DATASET = {
   courses: [],
 };
 
+const CURRENT_DATASET = DATASET_OPTIONS.find((dataset) => dataset.loadData) ?? DATASET_OPTIONS[0];
+const SCENARIO_TERM_COUNTS = {
+  freshman: 8,
+  sophomore: 6,
+  junior: 4,
+  senior: 2,
+  transfer: 6,
+};
+const DEFAULT_TIMELINE_TERMS = 4;
+const OAUTH_URL_KEYS = [
+  "access_token",
+  "code",
+  "error",
+  "error_code",
+  "error_description",
+  "expires_at",
+  "expires_in",
+  "provider_token",
+  "refresh_token",
+  "token_type",
+  "type",
+];
+
 function loadSavedState() {
   try {
     const saved = window.localStorage.getItem(STORAGE_KEY);
@@ -44,8 +67,8 @@ function resolveDatasetData(dataset, remoteData) {
   return remoteData ?? dataset.data ?? dataset.fallbackData ?? EMPTY_DATASET;
 }
 
-function getLocalSavedState() {
-  return loadSavedState();
+function buildRoadmapCodes(planCourseCodes, selectedElectiveCodes) {
+  return [...new Set([...planCourseCodes, ...selectedElectiveCodes])];
 }
 
 function getTimeValue(value) {
@@ -59,7 +82,7 @@ function normalizePlannerForCompare(plannerState) {
   }
 
   return {
-    datasetId: plannerState.datasetId ?? DATASET_OPTIONS[0].id,
+    datasetId: plannerState.datasetId ?? CURRENT_DATASET.id,
     college: plannerState.college ?? "",
     major: plannerState.major ?? "",
     completedCodes: [...(plannerState.completedCodes ?? [])].sort(),
@@ -99,9 +122,10 @@ function serializePlannerState({
   };
 }
 
-function serializeLocalPlannerState(plannerState) {
+function serializeLocalPlannerState(plannerState, timelineTermCount) {
   return {
     ...plannerState,
+    timelineTermCount,
     localUpdatedAt: new Date().toISOString(),
   };
 }
@@ -136,31 +160,66 @@ function fromPlannerStateRow(row) {
   };
 }
 
+function getTimelineCountForScenario(activeScenarioKey) {
+  return activeScenarioKey
+    ? SCENARIO_TERM_COUNTS[activeScenarioKey] ?? DEFAULT_TIMELINE_TERMS
+    : DEFAULT_TIMELINE_TERMS;
+}
+
+function getOAuthRedirectUrl() {
+  return `${window.location.origin}${window.location.pathname}`;
+}
+
+function readAuthCallbackState() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const params = new Map();
+
+  for (const key of OAUTH_URL_KEYS) {
+    const searchValue = searchParams.get(key);
+    const hashValue = hashParams.get(key);
+
+    if (searchValue) {
+      params.set(key, searchValue);
+    } else if (hashValue) {
+      params.set(key, hashValue);
+    }
+  }
+
+  return {
+    hasAuthParams: params.size > 0,
+    errorDescription: params.get("error_description") ?? params.get("error") ?? "",
+  };
+}
+
 function applyPlannerState({
   plannerState,
-  setDatasetId,
-  setCollege,
-  setMajor,
   setCompletedCodes,
   setIncludeSummer,
   setMaxCredits,
   setSelectedElectiveCodes,
   setSelectedCourseCode,
   setActiveScenarioKey,
+  setTimelineTermCount,
 }) {
-  setDatasetId(plannerState.datasetId ?? DATASET_OPTIONS[0].id);
-  setCollege(plannerState.college ?? "");
-  setMajor(plannerState.major ?? "");
   setCompletedCodes(plannerState.completedCodes ?? []);
   setIncludeSummer(Boolean(plannerState.includeSummer));
   setMaxCredits(plannerState.maxCredits ?? 15);
   setSelectedElectiveCodes(plannerState.selectedElectiveCodes ?? []);
   setSelectedCourseCode(plannerState.selectedCourseCode ?? null);
   setActiveScenarioKey(plannerState.activeScenarioKey ?? null);
+  setTimelineTermCount(getTimelineCountForScenario(plannerState.activeScenarioKey));
 }
 
 export default function App() {
   const savedState = useMemo(() => loadSavedState(), []);
+  const authCallbackState = useMemo(() => readAuthCallbackState(), []);
+  const [remoteDatasetData, setRemoteDatasetData] = useState(CURRENT_DATASET.data ?? null);
+  const [datasetLoadState, setDatasetLoadState] = useState({
+    status: CURRENT_DATASET.loadData ? "loading" : "ready",
+    message: "",
+  });
+  const [profileOpen, setProfileOpen] = useState(false);
   const [authUser, setAuthUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState("");
@@ -168,19 +227,12 @@ export default function App() {
   const [pendingSyncChoice, setPendingSyncChoice] = useState(null);
   const [saveStatus, setSaveStatus] = useState("Local only");
   const [saveError, setSaveError] = useState("");
-  const [datasetId, setDatasetId] = useState(savedState?.datasetId ?? DATASET_OPTIONS[0].id);
-  const selectedDataset = useMemo(() => getDatasetById(datasetId), [datasetId]);
-  const [remoteDatasetData, setRemoteDatasetData] = useState(selectedDataset.data ?? null);
-  const [datasetLoadState, setDatasetLoadState] = useState({
-    status: selectedDataset.loadData ? "loading" : "ready",
-    message: "",
-  });
 
   useEffect(() => {
     let cancelled = false;
 
-    if (!selectedDataset.loadData) {
-      setRemoteDatasetData(selectedDataset.data ?? null);
+    if (!CURRENT_DATASET.loadData) {
+      setRemoteDatasetData(CURRENT_DATASET.data ?? null);
       setDatasetLoadState({ status: "ready", message: "" });
       return () => {
         cancelled = true;
@@ -190,8 +242,7 @@ export default function App() {
     setRemoteDatasetData(null);
     setDatasetLoadState({ status: "loading", message: "Refreshing the latest catalog..." });
 
-    selectedDataset
-      .loadData()
+    CURRENT_DATASET.loadData()
       .then((data) => {
         if (cancelled) {
           return;
@@ -212,23 +263,22 @@ export default function App() {
         setRemoteDatasetData(null);
         setDatasetLoadState({
           status: "error",
-          message: "The current catalog could not be refreshed, so the planner is showing the built-in catalog for now.",
+          message:
+            "The current catalog could not be refreshed, so the planner is showing the built-in catalog for now.",
         });
       });
 
     return () => {
       cancelled = true;
     };
-  }, [selectedDataset]);
+  }, []);
 
   const rawDataset = useMemo(
-    () => resolveDatasetData(selectedDataset, remoteDatasetData),
-    [remoteDatasetData, selectedDataset],
+    () => resolveDatasetData(CURRENT_DATASET, remoteDatasetData),
+    [remoteDatasetData],
   );
   const catalog = useMemo(() => createCatalog(rawDataset), [rawDataset]);
 
-  const [college, setCollege] = useState(savedState?.college ?? catalog.source.college);
-  const [major, setMajor] = useState(savedState?.major ?? catalog.source.major);
   const [completedCodes, setCompletedCodes] = useState(savedState?.completedCodes ?? []);
   const [includeSummer, setIncludeSummer] = useState(savedState?.includeSummer ?? false);
   const [maxCredits, setMaxCredits] = useState(savedState?.maxCredits ?? 15);
@@ -239,9 +289,21 @@ export default function App() {
     savedState?.selectedCourseCode ?? catalog.planCourseCodes[0] ?? null,
   );
   const [activeScenarioKey, setActiveScenarioKey] = useState(savedState?.activeScenarioKey ?? null);
+  const [timelineTermCount, setTimelineTermCount] = useState(
+    savedState?.timelineTermCount ??
+      getTimelineCountForScenario(savedState?.activeScenarioKey),
+  );
 
   useEffect(() => {
     let mounted = true;
+
+    if (authCallbackState.hasAuthParams) {
+      setProfileOpen(true);
+    }
+
+    if (authCallbackState.errorDescription) {
+      setAuthError(decodeURIComponent(authCallbackState.errorDescription));
+    }
 
     supabase.auth
       .getSession()
@@ -260,10 +322,19 @@ export default function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setAuthUser(session?.user ?? null);
       setAuthLoading(false);
-      setAuthError("");
+
+      if (event === "SIGNED_IN") {
+        setAuthError("");
+        setProfileOpen(true);
+        setSaveStatus("Connected to account");
+      }
+
+      if (event === "SIGNED_OUT") {
+        setAuthError("");
+      }
     });
 
     return () => {
@@ -271,6 +342,22 @@ export default function App() {
       subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    setCompletedCodes((current) => current.filter((code) => catalog.courseMap[code]));
+    setSelectedElectiveCodes((current) => current.filter((code) => catalog.courseMap[code]));
+    setSelectedCourseCode((current) =>
+      current && catalog.courseMap[current] ? current : catalog.planCourseCodes[0] ?? null,
+    );
+  }, [catalog.courseMap, catalog.planCourseCodes]);
+
+  useEffect(() => {
+    const expectedTimelineTermCount = getTimelineCountForScenario(activeScenarioKey);
+
+    if (timelineTermCount !== expectedTimelineTermCount) {
+      setTimelineTermCount(expectedTimelineTermCount);
+    }
+  }, [activeScenarioKey, timelineTermCount]);
 
   useEffect(() => {
     if (!authUser) {
@@ -303,7 +390,7 @@ export default function App() {
         }
 
         if (data) {
-          const localState = getLocalSavedState();
+          const localState = loadSavedState();
           const remoteState = fromPlannerStateRow(data);
           const localUpdatedAt = getTimeValue(localState?.localUpdatedAt);
           const hasLocalConflict = localUpdatedAt > 0 && !plannerStatesMatch(localState, remoteState);
@@ -316,15 +403,13 @@ export default function App() {
 
           applyPlannerState({
             plannerState: remoteState,
-            setDatasetId,
-            setCollege,
-            setMajor,
             setCompletedCodes,
             setIncludeSummer,
             setMaxCredits,
             setSelectedElectiveCodes,
             setSelectedCourseCode,
             setActiveScenarioKey,
+            setTimelineTermCount,
           });
           setSaveStatus("Saved plan loaded");
         } else {
@@ -339,62 +424,42 @@ export default function App() {
     };
   }, [authUser]);
 
-  useEffect(() => {
-    setCollege(catalog.source.college);
-    setMajor(catalog.source.major);
-  }, [catalog.source.college, catalog.source.major]);
-
-  useEffect(() => {
-    setCompletedCodes((current) => current.filter((code) => catalog.courseMap[code]));
-    setSelectedElectiveCodes((current) => current.filter((code) => catalog.courseMap[code]));
-    setSelectedCourseCode((current) =>
-      current && catalog.courseMap[current] ? current : catalog.planCourseCodes[0] ?? null,
-    );
-    setActiveScenarioKey(null);
-  }, [catalog.courseMap, catalog.planCourseCodes]);
-
-  useEffect(() => {
-    const plannerState = serializePlannerState({
-        datasetId,
-        college,
-        major,
+  const plannerState = useMemo(
+    () =>
+      serializePlannerState({
+        datasetId: CURRENT_DATASET.id,
+        college: catalog.source.college,
+        major: catalog.source.major,
         completedCodes,
         includeSummer,
         maxCredits,
         selectedElectiveCodes,
         selectedCourseCode,
         activeScenarioKey,
-      });
+      }),
+    [
+      activeScenarioKey,
+      catalog.source.college,
+      catalog.source.major,
+      completedCodes,
+      includeSummer,
+      maxCredits,
+      selectedCourseCode,
+      selectedElectiveCodes,
+    ],
+  );
 
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeLocalPlannerState(plannerState)));
-  }, [
-    datasetId,
-    college,
-    major,
-    completedCodes,
-    includeSummer,
-    maxCredits,
-    selectedElectiveCodes,
-    selectedCourseCode,
-    activeScenarioKey,
-  ]);
+  useEffect(() => {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(serializeLocalPlannerState(plannerState, timelineTermCount)),
+    );
+  }, [plannerState, timelineTermCount]);
 
   useEffect(() => {
     if (!authUser || remoteStateLoadedFor !== authUser.id) {
       return undefined;
     }
-
-    const plannerState = serializePlannerState({
-      datasetId,
-      college,
-      major,
-      completedCodes,
-      includeSummer,
-      maxCredits,
-      selectedElectiveCodes,
-      selectedCourseCode,
-      activeScenarioKey,
-    });
 
     const timeoutId = window.setTimeout(() => {
       setSaveStatus("Saving...");
@@ -420,19 +485,109 @@ export default function App() {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [
-    authUser,
-    remoteStateLoadedFor,
-    datasetId,
-    college,
-    major,
-    completedCodes,
-    includeSummer,
-    maxCredits,
-    selectedElectiveCodes,
-    selectedCourseCode,
-    activeScenarioKey,
-  ]);
+  }, [authUser, plannerState, remoteStateLoadedFor]);
+
+  const roadmapCourseCodes = useMemo(
+    () => buildRoadmapCodes(catalog.planCourseCodes, selectedElectiveCodes),
+    [catalog.planCourseCodes, selectedElectiveCodes],
+  );
+
+  const statuses = useMemo(
+    () => getCourseStatuses(catalog.courses, completedCodes),
+    [catalog.courses, completedCodes],
+  );
+
+  const graph = useMemo(
+    () => buildGraphLayout(catalog.courses, catalog.courseMap, roadmapCourseCodes),
+    [catalog.courses, catalog.courseMap, roadmapCourseCodes],
+  );
+
+  const plan = useMemo(
+    () =>
+      generateSemesterPlan({
+        courses: catalog.courses,
+        courseMap: catalog.courseMap,
+        completedCodes,
+        planCourseCodes: catalog.planCourseCodes,
+        selectedElectiveCodes,
+        includeSummer,
+        maxCredits,
+        targetSemesterCount: timelineTermCount,
+      }),
+    [
+      catalog.courses,
+      catalog.courseMap,
+      catalog.planCourseCodes,
+      completedCodes,
+      selectedElectiveCodes,
+      includeSummer,
+      maxCredits,
+      timelineTermCount,
+    ],
+  );
+
+  const trackedCredits = useMemo(
+    () =>
+      roadmapCourseCodes.reduce(
+        (sum, code) => sum + (completedCodes.includes(code) ? catalog.courseMap[code]?.credits ?? 0 : 0),
+        0,
+      ),
+    [catalog.courseMap, roadmapCourseCodes, completedCodes],
+  );
+  const completedTrackedCount = useMemo(
+    () => roadmapCourseCodes.filter((code) => completedCodes.includes(code)).length,
+    [roadmapCourseCodes, completedCodes],
+  );
+  const totalCreditsRequired = catalog.program.creditsRequired || 120;
+  const progressPercent = Math.max(
+    0,
+    Math.min(100, Math.round((trackedCredits / Math.max(totalCreditsRequired, 1)) * 100)),
+  );
+
+  const selectedCourse = selectedCourseCode ? catalog.courseMap[selectedCourseCode] ?? null : null;
+
+  function setCourseCompleted(code, nextChecked) {
+    setCompletedCodes((current) => {
+      const currentSet = new Set(current);
+
+      if (nextChecked) {
+        currentSet.add(code);
+      } else {
+        currentSet.delete(code);
+      }
+
+      return [...currentSet];
+    });
+    setSelectedCourseCode(code);
+  }
+
+  function toggleElective(code) {
+    setSelectedElectiveCodes((current) =>
+      current.includes(code) ? current.filter((item) => item !== code) : [...current, code],
+    );
+    setSelectedCourseCode(code);
+  }
+
+  function applyScenario(key) {
+    const scenario = demoScenarios[key];
+    if (!scenario) {
+      return;
+    }
+
+    const nextRecommendedCode =
+      roadmapCourseCodes.find((code) => !scenario.completed.includes(code)) ??
+      scenario.completed[scenario.completed.length - 1] ??
+      roadmapCourseCodes[0] ??
+      null;
+
+    setCompletedCodes([...scenario.completed]);
+    setIncludeSummer(false);
+    setMaxCredits(15);
+    setSelectedElectiveCodes([]);
+    setSelectedCourseCode(nextRecommendedCode);
+    setActiveScenarioKey(key);
+    setTimelineTermCount(SCENARIO_TERM_COUNTS[key] ?? DEFAULT_TIMELINE_TERMS);
+  }
 
   function useLocalPlanForAccount() {
     if (!authUser || !pendingSyncChoice?.localState) {
@@ -451,123 +606,28 @@ export default function App() {
 
     applyPlannerState({
       plannerState: pendingSyncChoice.remoteState,
-      setDatasetId,
-      setCollege,
-      setMajor,
       setCompletedCodes,
       setIncludeSummer,
       setMaxCredits,
       setSelectedElectiveCodes,
       setSelectedCourseCode,
       setActiveScenarioKey,
+      setTimelineTermCount,
     });
     setPendingSyncChoice(null);
     setRemoteStateLoadedFor(authUser.id);
     setSaveStatus("Saved plan loaded");
   }
 
-  const statuses = useMemo(
-    () => getCourseStatuses(catalog.courses, completedCodes),
-    [catalog.courses, completedCodes],
-  );
-
-  const graph = useMemo(
-    () => buildGraphLayout(catalog.courses, catalog.courseMap, catalog.planCourseCodes),
-    [catalog.courses, catalog.courseMap, catalog.planCourseCodes],
-  );
-
-  const plan = useMemo(
-    () =>
-      generateSemesterPlan({
-        courses: catalog.courses,
-        courseMap: catalog.courseMap,
-        completedCodes,
-        planCourseCodes: catalog.planCourseCodes,
-        selectedElectiveCodes,
-        includeSummer,
-        maxCredits,
-      }),
-    [
-      catalog.courses,
-      catalog.courseMap,
-      catalog.planCourseCodes,
-      completedCodes,
-      selectedElectiveCodes,
-      includeSummer,
-      maxCredits,
-    ],
-  );
-
-  const trackedCredits = useMemo(
-    () =>
-      catalog.planCourseCodes.reduce(
-        (sum, code) => sum + (completedCodes.includes(code) ? catalog.courseMap[code]?.credits ?? 0 : 0),
-        0,
-      ),
-    [catalog.courseMap, catalog.planCourseCodes, completedCodes],
-  );
-  const completedTrackedCount = useMemo(
-    () => catalog.planCourseCodes.filter((code) => completedCodes.includes(code)).length,
-    [catalog.planCourseCodes, completedCodes],
-  );
-  const activeSemesterCount = useMemo(
-    () => plan.semesters.filter((semester) => semester.courses.length).length,
-    [plan.semesters],
-  );
-
-  const selectedCourse = selectedCourseCode ? catalog.courseMap[selectedCourseCode] ?? null : null;
-
-  function setCourseCompleted(code, nextChecked) {
-    setCompletedCodes((current) => {
-      const currentSet = new Set(current);
-
-      if (nextChecked) {
-        currentSet.add(code);
-      } else {
-        currentSet.delete(code);
-      }
-
-      return [...currentSet];
-    });
-    setSelectedCourseCode(code);
-    setActiveScenarioKey(null);
-  }
-
-  function toggleElective(code) {
-    setSelectedElectiveCodes((current) =>
-      current.includes(code) ? current.filter((item) => item !== code) : [...current, code],
-    );
-    setActiveScenarioKey(null);
-  }
-
-  function applyScenario(key) {
-    const scenario = demoScenarios[key];
-    if (!scenario) {
-      return;
-    }
-
-    const nextRecommendedCode =
-      catalog.planCourseCodes.find((code) => !scenario.completed.includes(code)) ??
-      scenario.completed[scenario.completed.length - 1] ??
-      catalog.planCourseCodes[0] ??
-      null;
-
-    setCompletedCodes([...scenario.completed]);
-    setIncludeSummer(false);
-    setMaxCredits(15);
-    setSelectedElectiveCodes([]);
-    setSelectedCourseCode(nextRecommendedCode);
-    setActiveScenarioKey(key);
-  }
-
   async function signInWithGoogle() {
     setAuthLoading(true);
     setAuthError("");
+    setSaveError("");
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: getOAuthRedirectUrl(),
       },
     });
 
@@ -587,89 +647,129 @@ export default function App() {
       setAuthError(error.message);
     } else {
       setAuthUser(null);
+      setProfileOpen(false);
     }
 
     setAuthLoading(false);
   }
 
   return (
-    <div className="app-shell">
-      <header className="app-header">
-        <div className="hero-content">
-          <div className="hero-kicker-row">
-            <p className="eyebrow">CUNYPath</p>
-            <span className="hero-tag">Hunter College</span>
+    <div className="app-shell app-shell-immersive">
+      <header className="topbar">
+        <div className="topbar-brand-row">
+          <button type="button" className="topbar-icon-button" aria-label="Open navigation">
+            <span />
+            <span />
+            <span />
+          </button>
+          <div className="brand-lockup">
+            <strong className="brand-cuny">CUNY</strong>
+            <strong className="brand-path">Path</strong>
           </div>
-          <h1>Build the clearest path to graduation.</h1>
-          <p className="hero-copy">
-            Mark what you have already finished, uncover the hidden gates in the curriculum, and
-            see a semester plan that keeps momentum instead of surprises.
-          </p>
-          <div className="hero-highlights">
-            <span>Interactive prerequisite map</span>
-            <span>Semester-by-semester plan</span>
-            <span>What-if scheduling controls</span>
-          </div>
-          {datasetLoadState?.message ? (
-            <p className={`hero-status is-${datasetLoadState.status}`}>{datasetLoadState.message}</p>
-          ) : null}
         </div>
 
-        <div className="hero-metrics">
-          <AuthPanel
-            user={authUser}
-            loading={authLoading}
-            error={authError}
-            saveStatus={saveStatus}
-            saveError={saveError}
-            pendingSyncChoice={Boolean(pendingSyncChoice)}
-            onUseLocalPlan={useLocalPlanForAccount}
-            onLoadAccountPlan={loadAccountPlan}
-            onSignIn={signInWithGoogle}
-            onSignOut={signOut}
-          />
-          <div className="metric-card metric-strong">
-            <span className="metric-label">Catalog courses</span>
-            <strong>{catalog.courses.length}</strong>
-            <span>available in this planning view</span>
+        <div className="topbar-selects">
+          <div className="topbar-select-card">
+            <span>College</span>
+            <strong>{catalog.source.college}</strong>
           </div>
-          <div className="metric-card">
-            <span className="metric-label">Roadmap progress</span>
-            <strong>
-              {completedTrackedCount}/{catalog.planCourseCodes.length}
-            </strong>
-            <span>planner courses marked complete</span>
+          <div className="topbar-select-card">
+            <span>Major</span>
+            <strong>{catalog.source.major}</strong>
           </div>
-          <div className="metric-card">
-            <span className="metric-label">Projected finish</span>
-            <strong>{plan.projectedGraduation}</strong>
-            <span>{activeSemesterCount} active terms in the current plan</span>
-          </div>
+        </div>
+
+        <div className="topbar-actions">
+          <button type="button" className="topbar-link">Help</button>
+          <button
+            type="button"
+            className={`topbar-link ${profileOpen ? "is-active" : ""}`}
+            onClick={() => setProfileOpen((current) => !current)}
+          >
+            My Profile
+          </button>
         </div>
       </header>
 
-      <main className="dashboard">
-        <section className="dashboard-sidebar">
+      <main className="workspace-layout">
+        <aside className="left-rail">
           <CollegeMajorSelector
-            datasetId={datasetId}
-            datasetOptions={DATASET_OPTIONS}
-            onDatasetChange={setDatasetId}
-            college={college}
-            major={major}
-            onCollegeChange={setCollege}
-            onMajorChange={setMajor}
+            catalogLabel={CURRENT_DATASET.label}
+            college={catalog.source.college}
+            major={catalog.source.major}
             datasetStatus={datasetLoadState}
           />
 
-          <section className="panel scenario-panel">
+          <WhatIfPanel
+            includeSummer={includeSummer}
+            onIncludeSummerChange={setIncludeSummer}
+            maxCredits={maxCredits}
+            onMaxCreditsChange={setMaxCredits}
+            electiveOptions={catalog.electiveOptions.map((code) => catalog.courseMap[code]).filter(Boolean)}
+            selectedElectiveCodes={selectedElectiveCodes}
+            onToggleElective={toggleElective}
+          />
+
+          <CompletedCourses
+            groups={catalog.groupedCourses}
+            completedCodes={completedCodes}
+            onSetCourseCompleted={setCourseCompleted}
+            trackedCredits={trackedCredits}
+            trackedCourseCount={roadmapCourseCodes.length}
+            planCourseCodes={roadmapCourseCodes}
+            degreeCreditsRequired={totalCreditsRequired}
+            progressPercent={progressPercent}
+            onSelectCourse={setSelectedCourseCode}
+          />
+        </aside>
+
+        <section className="planner-workspace">
+          <div className="workspace-summary-row">
+            <div className="summary-pill">
+              <span>Credits completed</span>
+              <strong>
+                {trackedCredits} / {totalCreditsRequired}
+              </strong>
+            </div>
+            <div className="summary-pill">
+              <span>Roadmap courses</span>
+              <strong>
+                {completedTrackedCount} / {roadmapCourseCodes.length}
+              </strong>
+            </div>
+            <div className="summary-pill summary-pill-emphasis">
+              <span>Projected graduation</span>
+              <strong>{plan.projectedGraduation}</strong>
+            </div>
+          </div>
+
+          <div className="map-detail-grid">
+            <DependencyGraph
+              graph={graph}
+              statuses={statuses}
+              selectedCode={selectedCourseCode}
+              emphasizedCodes={roadmapCourseCodes}
+              onSelectCourse={setSelectedCourseCode}
+            />
+
+            <CourseDetail
+              course={selectedCourse}
+              status={selectedCourse ? statuses[selectedCourse.code] : ""}
+              inPlan={selectedCourse ? roadmapCourseCodes.includes(selectedCourse.code) : false}
+              courseMap={catalog.courseMap}
+            />
+          </div>
+
+          <section className="panel scenario-panel scenario-panel-inline">
             <div className="panel-header">
               <div>
-                <p className="eyebrow">Starting points</p>
-                <h2>Jump to a realistic snapshot</h2>
+                <p className="eyebrow">Snapshots</p>
+                <h2>Jump to a starting point</h2>
               </div>
+              <span className="panel-chip">Timeline: {plan.semesters.length} terms</span>
             </div>
 
-            <div className="scenario-actions">
+            <div className="scenario-actions scenario-actions-inline">
               {Object.entries(demoScenarios).map(([key, scenario]) => (
                 <button
                   key={key}
@@ -684,48 +784,50 @@ export default function App() {
             </div>
           </section>
 
-          <WhatIfPanel
-            includeSummer={includeSummer}
-            onIncludeSummerChange={setIncludeSummer}
+          <SemesterPlan
+            plan={plan}
+            courseMap={catalog.courseMap}
+            roadmapCourseCodes={roadmapCourseCodes}
+            completedCodes={completedCodes}
             maxCredits={maxCredits}
-            onMaxCreditsChange={setMaxCredits}
-            electiveOptions={catalog.electiveOptions.map((code) => catalog.courseMap[code]).filter(Boolean)}
-            selectedElectiveCodes={selectedElectiveCodes}
-            onToggleElective={toggleElective}
-          />
-        </section>
-
-        <section className="dashboard-main">
-          <DependencyGraph
-            graph={graph}
-            statuses={statuses}
-            selectedCode={selectedCourseCode}
-            emphasizedCodes={[...catalog.planCourseCodes, ...selectedElectiveCodes]}
             onSelectCourse={setSelectedCourseCode}
-          />
-
-          <SemesterPlan plan={plan} />
-        </section>
-
-        <section className="dashboard-rail">
-          <CourseDetail
-            course={selectedCourse}
-            status={selectedCourse ? statuses[selectedCourse.code] : ""}
-            inPlan={selectedCourse ? catalog.planCourseCodes.includes(selectedCourse.code) : false}
           />
         </section>
       </main>
 
-      <section className="dashboard-lower">
-        <CompletedCourses
-          groups={catalog.groupedCourses}
-          completedCodes={completedCodes}
-          onSetCourseCompleted={setCourseCompleted}
-          trackedCredits={trackedCredits}
-          trackedCourseCount={catalog.planCourseCodes.length}
-          planCourseCodes={catalog.planCourseCodes}
-        />
-      </section>
+      {profileOpen ? (
+        <div className="profile-backdrop" onClick={() => setProfileOpen(false)}>
+          <aside className="profile-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="profile-modal-header">
+              <div>
+                <p className="eyebrow">Account</p>
+                <h2>My Profile</h2>
+              </div>
+              <button type="button" className="profile-close-button" onClick={() => setProfileOpen(false)}>
+                Close
+              </button>
+            </div>
+
+            <p className="profile-modal-copy">
+              Sign in to save your planner to your account, restore it later, and keep your local and account plan in sync.
+            </p>
+
+            <AuthPanel
+              user={authUser}
+              loading={authLoading}
+              error={authError}
+              saveStatus={saveStatus}
+              saveError={saveError}
+              pendingSyncChoice={Boolean(pendingSyncChoice)}
+              onUseLocalPlan={useLocalPlanForAccount}
+              onLoadAccountPlan={loadAccountPlan}
+              onSignIn={signInWithGoogle}
+              onSignOut={signOut}
+            />
+          </aside>
+        </div>
+      ) : null}
     </div>
   );
 }
+

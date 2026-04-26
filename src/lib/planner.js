@@ -5,7 +5,6 @@ const DIFFICULTY_POINTS = {
   advanced: 4,
 };
 
-const TERM_SEQUENCE = ["spring", "summer", "fall"];
 const TERM_LABELS = {
   spring: "Spring",
   summer: "Summer",
@@ -28,7 +27,7 @@ function isCourseOfferedIn(course, season) {
   return course.semestersOffered.includes(season);
 }
 
-function hasSatisfiedPrerequisites(course, completedSet) {
+export function hasSatisfiedPrerequisites(course, completedSet) {
   const groups = course.prerequisiteGroups ?? course.prerequisites.map((code) => [code]);
 
   return groups.every((group) => {
@@ -116,9 +115,7 @@ function getDescendantCounts(courses, courseMap) {
     return descendants;
   }
 
-  return Object.fromEntries(
-    courses.map((course) => [course.code, visit(course.code).size]),
-  );
+  return Object.fromEntries(courses.map((course) => [course.code, visit(course.code).size]));
 }
 
 export function getCourseStatuses(courses, completedCodes) {
@@ -168,7 +165,6 @@ export function buildGraphLayout(courses, courseMap, emphasizedCodes = []) {
     }
 
     const course = courseMap[code];
-
     if (!course) {
       return 0;
     }
@@ -210,12 +206,12 @@ export function buildGraphLayout(courses, courseMap, emphasizedCodes = []) {
       }),
     ]);
 
-  const nodeWidth = 188;
-  const nodeHeight = 84;
-  const horizontalGap = 84;
-  const verticalGap = 26;
-  const topPadding = 36;
-  const leftPadding = 36;
+  const nodeWidth = 162;
+  const nodeHeight = 88;
+  const horizontalGap = 34;
+  const verticalGap = 16;
+  const topPadding = 84;
+  const leftPadding = 18;
 
   const nodes = [];
   let maxRows = 0;
@@ -265,6 +261,7 @@ export function generateSemesterPlan({
   selectedElectiveCodes = [],
   includeSummer = false,
   maxCredits = 15,
+  targetSemesterCount = 6,
 }) {
   const descendantCounts = getDescendantCounts(courses, courseMap);
   const requiredCodes = unique([...planCourseCodes, ...selectedElectiveCodes]).filter(
@@ -275,10 +272,13 @@ export function generateSemesterPlan({
   const remainingCodes = new Set(requiredCodes.filter((code) => !completedSet.has(code)));
   const semesters = [];
   let cursor = getStartingTerm(includeSummer);
-  let guard = 0;
+  const maxGeneratedTerms = Math.max(targetSemesterCount, 20);
 
-  while (remainingCodes.size && guard < 20) {
-    guard += 1;
+  for (
+    let termIndex = 0;
+    termIndex < maxGeneratedTerms && (termIndex < targetSemesterCount || remainingCodes.size > 0);
+    termIndex += 1
+  ) {
     const availableCourses = [...remainingCodes]
       .map((code) => courseMap[code])
       .filter((course) => hasSatisfiedPrerequisites(course, completedSet))
@@ -319,6 +319,7 @@ export function generateSemesterPlan({
     if (!chosenCourses.length && availableCourses.length) {
       chosenCourses.push(availableCourses[0]);
       usedCredits = availableCourses[0].credits;
+      usedDifficulty = getDifficultyPoints(availableCourses[0]);
     }
 
     if (chosenCourses.length) {
@@ -355,3 +356,4 @@ export function generateSemesterPlan({
     totalRemainingCredits,
   };
 }
+

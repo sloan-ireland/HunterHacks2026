@@ -1,7 +1,7 @@
 const STATUS_LABELS = {
-  completed: "Done",
-  available: "Ready",
-  next: "Next",
+  completed: "Completed",
+  available: "Available Now",
+  next: "Available Next",
   locked: "Locked",
 };
 
@@ -47,13 +47,13 @@ export default function CourseNode({ course, status, selected, onSelect, emphasi
       onClick={() => onSelect(course.code)}
     >
       <span className="graph-node-topline">
-        <span>{course.code}</span>
-        <span>{course.credits} cr</span>
+        <span className="graph-node-code">{course.code}</span>
+        <span className="graph-node-credit">{course.credits}</span>
       </span>
       <strong>{course.name}</strong>
       <span className="graph-node-footer">
         <span>{STATUS_LABELS[status]}</span>
-        <span>{emphasized ? "In plan" : course.category}</span>
+        <span>{emphasized ? "In roadmap" : course.category}</span>
       </span>
 
       <span className="graph-node-hovercard" aria-hidden="true">
