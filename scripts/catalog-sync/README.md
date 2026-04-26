@@ -37,4 +37,9 @@ The generated `courses.json` and `normalized-courses.json` files are ignored by 
 
 ## Schema
 
-Run `supabase-schema.sql` in Supabase before the first import.
+Run the SQL files in `../../supabase/schema/` in numeric order before the first import:
+
+```text
+001_catalog_tables.sql
+002_user_planner_state.sql
+```

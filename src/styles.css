@@ -179,6 +179,62 @@ button {
   color: #5f728d;
 }
 
+.auth-card {
+  gap: 10px;
+}
+
+.auth-card strong {
+  overflow-wrap: anywhere;
+}
+
+.auth-button {
+  width: 100%;
+  border: 1px solid #18386d;
+  border-radius: 8px;
+  background: #18386d;
+  color: #ffffff;
+  padding: 10px 12px;
+  font-weight: 700;
+}
+
+.auth-button.secondary {
+  border-color: #d2dcf0;
+  background: #ffffff;
+  color: #1b2f4c;
+}
+
+.auth-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.auth-error {
+  color: #985527;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.auth-save-status {
+  color: #236245;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.sync-choice {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #dbe5f8;
+  background: #f7faff;
+}
+
+.sync-choice span {
+  color: #385176;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
 .dashboard {
   display: grid;
   grid-template-columns: minmax(310px, 350px) minmax(0, 1fr) minmax(300px, 352px);

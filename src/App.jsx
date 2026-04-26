@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import AuthPanel from "./components/AuthPanel";
 import CollegeMajorSelector from "./components/CollegeMajorSelector";
 import CompletedCourses from "./components/CompletedCourses";
 import CourseDetail from "./components/CourseDetail";
@@ -8,8 +9,10 @@ import WhatIfPanel from "./components/WhatIfPanel";
 import { DATASET_OPTIONS, getDatasetById } from "./data/datasetRegistry";
 import { createCatalog, demoScenarios } from "./lib/catalog";
 import { buildGraphLayout, generateSemesterPlan, getCourseStatuses } from "./lib/planner";
+import { supabase } from "./lib/supabaseClient";
 
 const STORAGE_KEY = "cunypath-front-end-state";
+const SAVE_STATUS_RESET_DELAY = 2200;
 const EMPTY_DATASET = {
   source: {
     college: "Hunter College",
@@ -41,8 +44,130 @@ function resolveDatasetData(dataset, remoteData) {
   return remoteData ?? dataset.data ?? dataset.fallbackData ?? EMPTY_DATASET;
 }
 
+function getLocalSavedState() {
+  return loadSavedState();
+}
+
+function getTimeValue(value) {
+  const time = Date.parse(value ?? "");
+  return Number.isFinite(time) ? time : 0;
+}
+
+function normalizePlannerForCompare(plannerState) {
+  if (!plannerState) {
+    return null;
+  }
+
+  return {
+    datasetId: plannerState.datasetId ?? DATASET_OPTIONS[0].id,
+    college: plannerState.college ?? "",
+    major: plannerState.major ?? "",
+    completedCodes: [...(plannerState.completedCodes ?? [])].sort(),
+    includeSummer: Boolean(plannerState.includeSummer),
+    maxCredits: plannerState.maxCredits ?? 15,
+    selectedElectiveCodes: [...(plannerState.selectedElectiveCodes ?? [])].sort(),
+    selectedCourseCode: plannerState.selectedCourseCode ?? null,
+    activeScenarioKey: plannerState.activeScenarioKey ?? null,
+  };
+}
+
+function plannerStatesMatch(left, right) {
+  return JSON.stringify(normalizePlannerForCompare(left)) === JSON.stringify(normalizePlannerForCompare(right));
+}
+
+function serializePlannerState({
+  datasetId,
+  college,
+  major,
+  completedCodes,
+  includeSummer,
+  maxCredits,
+  selectedElectiveCodes,
+  selectedCourseCode,
+  activeScenarioKey,
+}) {
+  return {
+    datasetId,
+    college,
+    major,
+    completedCodes,
+    includeSummer,
+    maxCredits,
+    selectedElectiveCodes,
+    selectedCourseCode,
+    activeScenarioKey,
+  };
+}
+
+function serializeLocalPlannerState(plannerState) {
+  return {
+    ...plannerState,
+    localUpdatedAt: new Date().toISOString(),
+  };
+}
+
+function toPlannerStateRow(userId, plannerState) {
+  return {
+    user_id: userId,
+    dataset_id: plannerState.datasetId,
+    college: plannerState.college,
+    major: plannerState.major,
+    completed_codes: plannerState.completedCodes,
+    selected_elective_codes: plannerState.selectedElectiveCodes,
+    selected_course_code: plannerState.selectedCourseCode,
+    include_summer: plannerState.includeSummer,
+    max_credits: plannerState.maxCredits,
+    active_scenario_key: plannerState.activeScenarioKey,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+function fromPlannerStateRow(row) {
+  return {
+    datasetId: row.dataset_id,
+    college: row.college,
+    major: row.major,
+    completedCodes: row.completed_codes ?? [],
+    includeSummer: row.include_summer,
+    maxCredits: row.max_credits,
+    selectedElectiveCodes: row.selected_elective_codes ?? [],
+    selectedCourseCode: row.selected_course_code,
+    activeScenarioKey: row.active_scenario_key,
+  };
+}
+
+function applyPlannerState({
+  plannerState,
+  setDatasetId,
+  setCollege,
+  setMajor,
+  setCompletedCodes,
+  setIncludeSummer,
+  setMaxCredits,
+  setSelectedElectiveCodes,
+  setSelectedCourseCode,
+  setActiveScenarioKey,
+}) {
+  setDatasetId(plannerState.datasetId ?? DATASET_OPTIONS[0].id);
+  setCollege(plannerState.college ?? "");
+  setMajor(plannerState.major ?? "");
+  setCompletedCodes(plannerState.completedCodes ?? []);
+  setIncludeSummer(Boolean(plannerState.includeSummer));
+  setMaxCredits(plannerState.maxCredits ?? 15);
+  setSelectedElectiveCodes(plannerState.selectedElectiveCodes ?? []);
+  setSelectedCourseCode(plannerState.selectedCourseCode ?? null);
+  setActiveScenarioKey(plannerState.activeScenarioKey ?? null);
+}
+
 export default function App() {
   const savedState = useMemo(() => loadSavedState(), []);
+  const [authUser, setAuthUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authError, setAuthError] = useState("");
+  const [remoteStateLoadedFor, setRemoteStateLoadedFor] = useState(null);
+  const [pendingSyncChoice, setPendingSyncChoice] = useState(null);
+  const [saveStatus, setSaveStatus] = useState("Local only");
+  const [saveError, setSaveError] = useState("");
   const [datasetId, setDatasetId] = useState(savedState?.datasetId ?? DATASET_OPTIONS[0].id);
   const selectedDataset = useMemo(() => getDatasetById(datasetId), [datasetId]);
   const [remoteDatasetData, setRemoteDatasetData] = useState(selectedDataset.data ?? null);
@@ -116,6 +241,105 @@ export default function App() {
   const [activeScenarioKey, setActiveScenarioKey] = useState(savedState?.activeScenarioKey ?? null);
 
   useEffect(() => {
+    let mounted = true;
+
+    supabase.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (!mounted) {
+          return;
+        }
+
+        if (error) {
+          setAuthError(error.message);
+        }
+
+        setAuthUser(data.session?.user ?? null);
+        setAuthLoading(false);
+      });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthUser(session?.user ?? null);
+      setAuthLoading(false);
+      setAuthError("");
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!authUser) {
+      setRemoteStateLoadedFor(null);
+      setPendingSyncChoice(null);
+      setSaveStatus("Local only");
+      setSaveError("");
+      return;
+    }
+
+    let cancelled = false;
+    setSaveStatus("Loading saved plan...");
+    setSaveError("");
+
+    supabase
+      .from("user_planner_states")
+      .select("*")
+      .eq("user_id", authUser.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled) {
+          return;
+        }
+
+        if (error) {
+          setSaveError(error.message);
+          setSaveStatus("Save unavailable");
+          setRemoteStateLoadedFor(authUser.id);
+          return;
+        }
+
+        if (data) {
+          const localState = getLocalSavedState();
+          const remoteState = fromPlannerStateRow(data);
+          const localUpdatedAt = getTimeValue(localState?.localUpdatedAt);
+          const hasLocalConflict = localUpdatedAt > 0 && !plannerStatesMatch(localState, remoteState);
+
+          if (hasLocalConflict) {
+            setPendingSyncChoice({ localState, remoteState });
+            setSaveStatus("Choose plan source");
+            return;
+          }
+
+          applyPlannerState({
+            plannerState: remoteState,
+            setDatasetId,
+            setCollege,
+            setMajor,
+            setCompletedCodes,
+            setIncludeSummer,
+            setMaxCredits,
+            setSelectedElectiveCodes,
+            setSelectedCourseCode,
+            setActiveScenarioKey,
+          });
+          setSaveStatus("Saved plan loaded");
+        } else {
+          setSaveStatus("Ready to save");
+        }
+
+        setRemoteStateLoadedFor(authUser.id);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authUser]);
+
+  useEffect(() => {
     setCollege(catalog.source.college);
     setMajor(catalog.source.major);
   }, [catalog.source.college, catalog.source.major]);
@@ -130,9 +354,7 @@ export default function App() {
   }, [catalog.courseMap, catalog.planCourseCodes]);
 
   useEffect(() => {
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
+    const plannerState = serializePlannerState({
         datasetId,
         college,
         major,
@@ -142,8 +364,9 @@ export default function App() {
         selectedElectiveCodes,
         selectedCourseCode,
         activeScenarioKey,
-      }),
-    );
+      });
+
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeLocalPlannerState(plannerState)));
   }, [
     datasetId,
     college,
@@ -155,6 +378,93 @@ export default function App() {
     selectedCourseCode,
     activeScenarioKey,
   ]);
+
+  useEffect(() => {
+    if (!authUser || remoteStateLoadedFor !== authUser.id) {
+      return undefined;
+    }
+
+    const plannerState = serializePlannerState({
+      datasetId,
+      college,
+      major,
+      completedCodes,
+      includeSummer,
+      maxCredits,
+      selectedElectiveCodes,
+      selectedCourseCode,
+      activeScenarioKey,
+    });
+
+    const timeoutId = window.setTimeout(() => {
+      setSaveStatus("Saving...");
+      setSaveError("");
+
+      supabase
+        .from("user_planner_states")
+        .upsert(toPlannerStateRow(authUser.id, plannerState), { onConflict: "user_id" })
+        .then(({ error }) => {
+          if (error) {
+            setSaveError(error.message);
+            setSaveStatus("Save failed");
+            return;
+          }
+
+          setSaveStatus("Saved");
+          window.setTimeout(() => {
+            setSaveStatus("Saved to account");
+          }, SAVE_STATUS_RESET_DELAY);
+        });
+    }, 600);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    authUser,
+    remoteStateLoadedFor,
+    datasetId,
+    college,
+    major,
+    completedCodes,
+    includeSummer,
+    maxCredits,
+    selectedElectiveCodes,
+    selectedCourseCode,
+    activeScenarioKey,
+  ]);
+
+  function useLocalPlanForAccount() {
+    if (!authUser || !pendingSyncChoice?.localState) {
+      return;
+    }
+
+    setPendingSyncChoice(null);
+    setSaveStatus("Saving local plan...");
+    setRemoteStateLoadedFor(authUser.id);
+  }
+
+  function loadAccountPlan() {
+    if (!authUser || !pendingSyncChoice?.remoteState) {
+      return;
+    }
+
+    applyPlannerState({
+      plannerState: pendingSyncChoice.remoteState,
+      setDatasetId,
+      setCollege,
+      setMajor,
+      setCompletedCodes,
+      setIncludeSummer,
+      setMaxCredits,
+      setSelectedElectiveCodes,
+      setSelectedCourseCode,
+      setActiveScenarioKey,
+    });
+    setPendingSyncChoice(null);
+    setRemoteStateLoadedFor(authUser.id);
+    setSaveStatus("Saved plan loaded");
+  }
 
   const statuses = useMemo(
     () => getCourseStatuses(catalog.courses, completedCodes),
@@ -250,6 +560,38 @@ export default function App() {
     setActiveScenarioKey(key);
   }
 
+  async function signInWithGoogle() {
+    setAuthLoading(true);
+    setAuthError("");
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+
+    if (error) {
+      setAuthError(error.message);
+      setAuthLoading(false);
+    }
+  }
+
+  async function signOut() {
+    setAuthLoading(true);
+    setAuthError("");
+
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      setAuthError(error.message);
+    } else {
+      setAuthUser(null);
+    }
+
+    setAuthLoading(false);
+  }
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -274,6 +616,18 @@ export default function App() {
         </div>
 
         <div className="hero-metrics">
+          <AuthPanel
+            user={authUser}
+            loading={authLoading}
+            error={authError}
+            saveStatus={saveStatus}
+            saveError={saveError}
+            pendingSyncChoice={Boolean(pendingSyncChoice)}
+            onUseLocalPlan={useLocalPlanForAccount}
+            onLoadAccountPlan={loadAccountPlan}
+            onSignIn={signInWithGoogle}
+            onSignOut={signOut}
+          />
           <div className="metric-card metric-strong">
             <span className="metric-label">Catalog courses</span>
             <strong>{catalog.courses.length}</strong>
