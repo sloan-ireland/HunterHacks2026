@@ -129,6 +129,10 @@ button {
   font-weight: 600;
 }
 
+.topbar-link.is-active {
+  color: #173b72;
+}
+
 .workspace-layout {
   display: grid;
   grid-template-columns: 300px minmax(0, 1fr);
@@ -184,6 +188,14 @@ button {
   background: linear-gradient(180deg, #f7fbff, #eef6ff);
 }
 
+.metric-label {
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #6b7f9d;
+}
+
 .map-detail-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 332px;
@@ -193,6 +205,118 @@ button {
 
 .panel {
   padding: 18px;
+}
+
+.profile-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(15, 27, 46, 0.32);
+  backdrop-filter: blur(6px);
+}
+
+.profile-modal {
+  width: min(420px, 100%);
+  height: 100%;
+  padding: 24px 22px;
+  background: rgba(255, 255, 255, 0.98);
+  border-left: 1px solid #dce6f5;
+  box-shadow: -16px 0 40px rgba(15, 27, 46, 0.14);
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  overflow: auto;
+}
+
+.profile-modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.profile-modal-header h2 {
+  margin: 0;
+}
+
+.profile-close-button {
+  border: 1px solid #d2dcf0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1b2f4c;
+  padding: 9px 12px;
+  font-weight: 600;
+}
+
+.profile-modal-copy {
+  margin: 0;
+  color: #536a88;
+  line-height: 1.6;
+}
+
+.auth-card {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid #dce6f5;
+  background: #f8fbff;
+}
+
+.auth-card strong {
+  overflow-wrap: anywhere;
+  font-size: 1.05rem;
+  color: #10243f;
+}
+
+.auth-button {
+  width: 100%;
+  border: 1px solid #18386d;
+  border-radius: 8px;
+  background: #18386d;
+  color: #ffffff;
+  padding: 11px 12px;
+  font-weight: 700;
+}
+
+.auth-button.secondary {
+  border-color: #d2dcf0;
+  background: #ffffff;
+  color: #1b2f4c;
+}
+
+.auth-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.auth-error {
+  color: #985527;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.auth-save-status {
+  color: #236245;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.sync-choice {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #dce6f5;
+  background: #ffffff;
+}
+
+.sync-choice span {
+  color: #385176;
+  font-size: 0.88rem;
+  line-height: 1.4;
 }
 
 .panel-header {

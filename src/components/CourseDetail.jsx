@@ -96,10 +96,6 @@ export default function CourseDetail({ course, status, inPlan, courseMap }) {
               <dt>Typically Offered</dt>
               <dd>{semesterLabel}</dd>
             </div>
-            <div>
-              <dt>Roadmap Status</dt>
-              <dd>{inPlan ? "Required in roadmap" : "Reference course"}</dd>
-            </div>
           </dl>
 
           {course.prerequisiteText ? (
@@ -110,11 +106,6 @@ export default function CourseDetail({ course, status, inPlan, courseMap }) {
           ) : null}
         </div>
       )}
-
-      <div className="drawer-footer">
-        <button type="button" className="primary-cta">{inPlan ? "In roadmap" : "Reference course"}</button>
-        <button type="button" className="secondary-cta" aria-label="Save course">?</button>
-      </div>
     </aside>
   );
 }

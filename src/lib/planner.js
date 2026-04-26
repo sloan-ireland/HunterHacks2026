@@ -272,8 +272,13 @@ export function generateSemesterPlan({
   const remainingCodes = new Set(requiredCodes.filter((code) => !completedSet.has(code)));
   const semesters = [];
   let cursor = getStartingTerm(includeSummer);
+  const maxGeneratedTerms = Math.max(targetSemesterCount, 20);
 
-  for (let termIndex = 0; termIndex < targetSemesterCount; termIndex += 1) {
+  for (
+    let termIndex = 0;
+    termIndex < maxGeneratedTerms && (termIndex < targetSemesterCount || remainingCodes.size > 0);
+    termIndex += 1
+  ) {
     const availableCourses = [...remainingCodes]
       .map((code) => courseMap[code])
       .filter((course) => hasSatisfiedPrerequisites(course, completedSet))

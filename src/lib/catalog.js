@@ -69,8 +69,8 @@ export function createCatalog(rawCatalog) {
       semestersOffered:
         course.semestersOffered?.map((semester) => semester.toLowerCase()) ?? [],
       prerequisiteGroups:
-        course.prerequisiteGroups ??
         PREREQUISITE_GROUP_OVERRIDES[course.code] ??
+        course.prerequisiteGroups ??
         course.prerequisites.map((code) => [code]),
     }))
     .sort(sortCourses);

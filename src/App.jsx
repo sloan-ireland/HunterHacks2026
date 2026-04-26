@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import AuthPanel from "./components/AuthPanel";
 import CollegeMajorSelector from "./components/CollegeMajorSelector";
 import CompletedCourses from "./components/CompletedCourses";
 import CourseDetail from "./components/CourseDetail";
@@ -8,8 +9,10 @@ import WhatIfPanel from "./components/WhatIfPanel";
 import { DATASET_OPTIONS } from "./data/datasetRegistry";
 import { createCatalog, demoScenarios } from "./lib/catalog";
 import { buildGraphLayout, generateSemesterPlan, getCourseStatuses } from "./lib/planner";
+import { supabase } from "./lib/supabaseClient";
 
 const STORAGE_KEY = "cunypath-front-end-state";
+const SAVE_STATUS_RESET_DELAY = 2200;
 const EMPTY_DATASET = {
   source: {
     college: "Hunter College",
@@ -37,6 +40,19 @@ const SCENARIO_TERM_COUNTS = {
   transfer: 6,
 };
 const DEFAULT_TIMELINE_TERMS = 4;
+const OAUTH_URL_KEYS = [
+  "access_token",
+  "code",
+  "error",
+  "error_code",
+  "error_description",
+  "expires_at",
+  "expires_in",
+  "provider_token",
+  "refresh_token",
+  "token_type",
+  "type",
+];
 
 function loadSavedState() {
   try {
@@ -55,13 +71,162 @@ function buildRoadmapCodes(planCourseCodes, selectedElectiveCodes) {
   return [...new Set([...planCourseCodes, ...selectedElectiveCodes])];
 }
 
+function getTimeValue(value) {
+  const time = Date.parse(value ?? "");
+  return Number.isFinite(time) ? time : 0;
+}
+
+function normalizePlannerForCompare(plannerState) {
+  if (!plannerState) {
+    return null;
+  }
+
+  return {
+    datasetId: plannerState.datasetId ?? CURRENT_DATASET.id,
+    college: plannerState.college ?? "",
+    major: plannerState.major ?? "",
+    completedCodes: [...(plannerState.completedCodes ?? [])].sort(),
+    includeSummer: Boolean(plannerState.includeSummer),
+    maxCredits: plannerState.maxCredits ?? 15,
+    selectedElectiveCodes: [...(plannerState.selectedElectiveCodes ?? [])].sort(),
+    selectedCourseCode: plannerState.selectedCourseCode ?? null,
+    activeScenarioKey: plannerState.activeScenarioKey ?? null,
+  };
+}
+
+function plannerStatesMatch(left, right) {
+  return JSON.stringify(normalizePlannerForCompare(left)) === JSON.stringify(normalizePlannerForCompare(right));
+}
+
+function serializePlannerState({
+  datasetId,
+  college,
+  major,
+  completedCodes,
+  includeSummer,
+  maxCredits,
+  selectedElectiveCodes,
+  selectedCourseCode,
+  activeScenarioKey,
+}) {
+  return {
+    datasetId,
+    college,
+    major,
+    completedCodes,
+    includeSummer,
+    maxCredits,
+    selectedElectiveCodes,
+    selectedCourseCode,
+    activeScenarioKey,
+  };
+}
+
+function serializeLocalPlannerState(plannerState, timelineTermCount) {
+  return {
+    ...plannerState,
+    timelineTermCount,
+    localUpdatedAt: new Date().toISOString(),
+  };
+}
+
+function toPlannerStateRow(userId, plannerState) {
+  return {
+    user_id: userId,
+    dataset_id: plannerState.datasetId,
+    college: plannerState.college,
+    major: plannerState.major,
+    completed_codes: plannerState.completedCodes,
+    selected_elective_codes: plannerState.selectedElectiveCodes,
+    selected_course_code: plannerState.selectedCourseCode,
+    include_summer: plannerState.includeSummer,
+    max_credits: plannerState.maxCredits,
+    active_scenario_key: plannerState.activeScenarioKey,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+function fromPlannerStateRow(row) {
+  return {
+    datasetId: row.dataset_id,
+    college: row.college,
+    major: row.major,
+    completedCodes: row.completed_codes ?? [],
+    includeSummer: row.include_summer,
+    maxCredits: row.max_credits,
+    selectedElectiveCodes: row.selected_elective_codes ?? [],
+    selectedCourseCode: row.selected_course_code,
+    activeScenarioKey: row.active_scenario_key,
+  };
+}
+
+function getTimelineCountForScenario(activeScenarioKey) {
+  return activeScenarioKey
+    ? SCENARIO_TERM_COUNTS[activeScenarioKey] ?? DEFAULT_TIMELINE_TERMS
+    : DEFAULT_TIMELINE_TERMS;
+}
+
+function getOAuthRedirectUrl() {
+  return `${window.location.origin}${window.location.pathname}`;
+}
+
+function readAuthCallbackState() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const params = new Map();
+
+  for (const key of OAUTH_URL_KEYS) {
+    const searchValue = searchParams.get(key);
+    const hashValue = hashParams.get(key);
+
+    if (searchValue) {
+      params.set(key, searchValue);
+    } else if (hashValue) {
+      params.set(key, hashValue);
+    }
+  }
+
+  return {
+    hasAuthParams: params.size > 0,
+    errorDescription: params.get("error_description") ?? params.get("error") ?? "",
+  };
+}
+
+function applyPlannerState({
+  plannerState,
+  setCompletedCodes,
+  setIncludeSummer,
+  setMaxCredits,
+  setSelectedElectiveCodes,
+  setSelectedCourseCode,
+  setActiveScenarioKey,
+  setTimelineTermCount,
+}) {
+  setCompletedCodes(plannerState.completedCodes ?? []);
+  setIncludeSummer(Boolean(plannerState.includeSummer));
+  setMaxCredits(plannerState.maxCredits ?? 15);
+  setSelectedElectiveCodes(plannerState.selectedElectiveCodes ?? []);
+  setSelectedCourseCode(plannerState.selectedCourseCode ?? null);
+  setActiveScenarioKey(plannerState.activeScenarioKey ?? null);
+  setTimelineTermCount(getTimelineCountForScenario(plannerState.activeScenarioKey));
+}
+
 export default function App() {
   const savedState = useMemo(() => loadSavedState(), []);
+  const authCallbackState = useMemo(() => readAuthCallbackState(), []);
   const [remoteDatasetData, setRemoteDatasetData] = useState(CURRENT_DATASET.data ?? null);
   const [datasetLoadState, setDatasetLoadState] = useState({
     status: CURRENT_DATASET.loadData ? "loading" : "ready",
     message: "",
   });
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [authUser, setAuthUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authError, setAuthError] = useState("");
+  const [remoteStateLoadedFor, setRemoteStateLoadedFor] = useState(null);
+  const [pendingSyncChoice, setPendingSyncChoice] = useState(null);
+  const [saveStatus, setSaveStatus] = useState("Local only");
+  const [saveError, setSaveError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -126,9 +291,57 @@ export default function App() {
   const [activeScenarioKey, setActiveScenarioKey] = useState(savedState?.activeScenarioKey ?? null);
   const [timelineTermCount, setTimelineTermCount] = useState(
     savedState?.timelineTermCount ??
-      SCENARIO_TERM_COUNTS[savedState?.activeScenarioKey] ??
-      DEFAULT_TIMELINE_TERMS,
+      getTimelineCountForScenario(savedState?.activeScenarioKey),
   );
+
+  useEffect(() => {
+    let mounted = true;
+
+    if (authCallbackState.hasAuthParams) {
+      setProfileOpen(true);
+    }
+
+    if (authCallbackState.errorDescription) {
+      setAuthError(decodeURIComponent(authCallbackState.errorDescription));
+    }
+
+    supabase.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (!mounted) {
+          return;
+        }
+
+        if (error) {
+          setAuthError(error.message);
+        }
+
+        setAuthUser(data.session?.user ?? null);
+        setAuthLoading(false);
+      });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setAuthUser(session?.user ?? null);
+      setAuthLoading(false);
+
+      if (event === "SIGNED_IN") {
+        setAuthError("");
+        setProfileOpen(true);
+        setSaveStatus("Connected to account");
+      }
+
+      if (event === "SIGNED_OUT") {
+        setAuthError("");
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     setCompletedCodes((current) => current.filter((code) => catalog.courseMap[code]));
@@ -139,9 +352,7 @@ export default function App() {
   }, [catalog.courseMap, catalog.planCourseCodes]);
 
   useEffect(() => {
-    const expectedTimelineTermCount = activeScenarioKey
-      ? SCENARIO_TERM_COUNTS[activeScenarioKey] ?? DEFAULT_TIMELINE_TERMS
-      : DEFAULT_TIMELINE_TERMS;
+    const expectedTimelineTermCount = getTimelineCountForScenario(activeScenarioKey);
 
     if (timelineTermCount !== expectedTimelineTermCount) {
       setTimelineTermCount(expectedTimelineTermCount);
@@ -149,27 +360,132 @@ export default function App() {
   }, [activeScenarioKey, timelineTermCount]);
 
   useEffect(() => {
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
+    if (!authUser) {
+      setRemoteStateLoadedFor(null);
+      setPendingSyncChoice(null);
+      setSaveStatus("Local only");
+      setSaveError("");
+      return;
+    }
+
+    let cancelled = false;
+    setSaveStatus("Loading saved plan...");
+    setSaveError("");
+
+    supabase
+      .from("user_planner_states")
+      .select("*")
+      .eq("user_id", authUser.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled) {
+          return;
+        }
+
+        if (error) {
+          setSaveError(error.message);
+          setSaveStatus("Save unavailable");
+          setRemoteStateLoadedFor(authUser.id);
+          return;
+        }
+
+        if (data) {
+          const localState = loadSavedState();
+          const remoteState = fromPlannerStateRow(data);
+          const localUpdatedAt = getTimeValue(localState?.localUpdatedAt);
+          const hasLocalConflict = localUpdatedAt > 0 && !plannerStatesMatch(localState, remoteState);
+
+          if (hasLocalConflict) {
+            setPendingSyncChoice({ localState, remoteState });
+            setSaveStatus("Choose plan source");
+            return;
+          }
+
+          applyPlannerState({
+            plannerState: remoteState,
+            setCompletedCodes,
+            setIncludeSummer,
+            setMaxCredits,
+            setSelectedElectiveCodes,
+            setSelectedCourseCode,
+            setActiveScenarioKey,
+            setTimelineTermCount,
+          });
+          setSaveStatus("Saved plan loaded");
+        } else {
+          setSaveStatus("Ready to save");
+        }
+
+        setRemoteStateLoadedFor(authUser.id);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authUser]);
+
+  const plannerState = useMemo(
+    () =>
+      serializePlannerState({
+        datasetId: CURRENT_DATASET.id,
+        college: catalog.source.college,
+        major: catalog.source.major,
         completedCodes,
         includeSummer,
         maxCredits,
         selectedElectiveCodes,
         selectedCourseCode,
         activeScenarioKey,
-        timelineTermCount,
       }),
+    [
+      activeScenarioKey,
+      catalog.source.college,
+      catalog.source.major,
+      completedCodes,
+      includeSummer,
+      maxCredits,
+      selectedCourseCode,
+      selectedElectiveCodes,
+    ],
+  );
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(serializeLocalPlannerState(plannerState, timelineTermCount)),
     );
-  }, [
-    completedCodes,
-    includeSummer,
-    maxCredits,
-    selectedElectiveCodes,
-    selectedCourseCode,
-    activeScenarioKey,
-    timelineTermCount,
-  ]);
+  }, [plannerState, timelineTermCount]);
+
+  useEffect(() => {
+    if (!authUser || remoteStateLoadedFor !== authUser.id) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSaveStatus("Saving...");
+      setSaveError("");
+
+      supabase
+        .from("user_planner_states")
+        .upsert(toPlannerStateRow(authUser.id, plannerState), { onConflict: "user_id" })
+        .then(({ error }) => {
+          if (error) {
+            setSaveError(error.message);
+            setSaveStatus("Save failed");
+            return;
+          }
+
+          setSaveStatus("Saved");
+          window.setTimeout(() => {
+            setSaveStatus("Saved to account");
+          }, SAVE_STATUS_RESET_DELAY);
+        });
+    }, 600);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [authUser, plannerState, remoteStateLoadedFor]);
 
   const roadmapCourseCodes = useMemo(
     () => buildRoadmapCodes(catalog.planCourseCodes, selectedElectiveCodes),
@@ -273,6 +589,70 @@ export default function App() {
     setTimelineTermCount(SCENARIO_TERM_COUNTS[key] ?? DEFAULT_TIMELINE_TERMS);
   }
 
+  function useLocalPlanForAccount() {
+    if (!authUser || !pendingSyncChoice?.localState) {
+      return;
+    }
+
+    setPendingSyncChoice(null);
+    setSaveStatus("Saving local plan...");
+    setRemoteStateLoadedFor(authUser.id);
+  }
+
+  function loadAccountPlan() {
+    if (!authUser || !pendingSyncChoice?.remoteState) {
+      return;
+    }
+
+    applyPlannerState({
+      plannerState: pendingSyncChoice.remoteState,
+      setCompletedCodes,
+      setIncludeSummer,
+      setMaxCredits,
+      setSelectedElectiveCodes,
+      setSelectedCourseCode,
+      setActiveScenarioKey,
+      setTimelineTermCount,
+    });
+    setPendingSyncChoice(null);
+    setRemoteStateLoadedFor(authUser.id);
+    setSaveStatus("Saved plan loaded");
+  }
+
+  async function signInWithGoogle() {
+    setAuthLoading(true);
+    setAuthError("");
+    setSaveError("");
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: getOAuthRedirectUrl(),
+      },
+    });
+
+    if (error) {
+      setAuthError(error.message);
+      setAuthLoading(false);
+    }
+  }
+
+  async function signOut() {
+    setAuthLoading(true);
+    setAuthError("");
+
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      setAuthError(error.message);
+    } else {
+      setAuthUser(null);
+      setProfileOpen(false);
+    }
+
+    setAuthLoading(false);
+  }
+
   return (
     <div className="app-shell app-shell-immersive">
       <header className="topbar">
@@ -301,7 +681,13 @@ export default function App() {
 
         <div className="topbar-actions">
           <button type="button" className="topbar-link">Help</button>
-          <button type="button" className="topbar-link">My Profile</button>
+          <button
+            type="button"
+            className={`topbar-link ${profileOpen ? "is-active" : ""}`}
+            onClick={() => setProfileOpen((current) => !current)}
+          >
+            My Profile
+          </button>
         </div>
       </header>
 
@@ -408,6 +794,39 @@ export default function App() {
           />
         </section>
       </main>
+
+      {profileOpen ? (
+        <div className="profile-backdrop" onClick={() => setProfileOpen(false)}>
+          <aside className="profile-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="profile-modal-header">
+              <div>
+                <p className="eyebrow">Account</p>
+                <h2>My Profile</h2>
+              </div>
+              <button type="button" className="profile-close-button" onClick={() => setProfileOpen(false)}>
+                Close
+              </button>
+            </div>
+
+            <p className="profile-modal-copy">
+              Sign in to save your planner to your account, restore it later, and keep your local and account plan in sync.
+            </p>
+
+            <AuthPanel
+              user={authUser}
+              loading={authLoading}
+              error={authError}
+              saveStatus={saveStatus}
+              saveError={saveError}
+              pendingSyncChoice={Boolean(pendingSyncChoice)}
+              onUseLocalPlan={useLocalPlanForAccount}
+              onLoadAccountPlan={loadAccountPlan}
+              onSignIn={signInWithGoogle}
+              onSignOut={signOut}
+            />
+          </aside>
+        </div>
+      ) : null}
     </div>
   );
 }
