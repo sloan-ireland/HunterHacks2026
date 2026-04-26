@@ -1,4 +1,5 @@
 import mockHunterCsPlaceholder from "./mockHunterCsPlaceholder";
+import { fetchSupabaseCatalogDataset } from "./supabaseCatalog";
 
 const mockHunterCsBalanced = {
   ...mockHunterCsPlaceholder,
@@ -42,6 +43,13 @@ export const DATASET_OPTIONS = [
     label: "Hunter CS Placeholder (Balanced)",
     description: "Alternate placeholder plan to test dataset switching in the UI.",
     data: mockHunterCsBalanced,
+  },
+  {
+    id: "hunter-live-supabase",
+    label: "Hunter CS Live (Supabase)",
+    description: "Reads live catalog rows from Supabase while keeping the Hunter CS roadmap stable.",
+    fallbackData: mockHunterCsPlaceholder,
+    loadData: fetchSupabaseCatalogDataset,
   },
 ];
 

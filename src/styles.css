@@ -181,6 +181,32 @@ button {
   color: #122033;
 }
 
+.selector-status {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.selector-status.is-loading {
+  background: #eef4ff;
+  border: 1px solid #d8e3fb;
+  color: #31558d;
+}
+
+.selector-status.is-ready {
+  background: #eef8f1;
+  border: 1px solid #d3e8da;
+  color: #236245;
+}
+
+.selector-status.is-error {
+  background: #fff4e8;
+  border: 1px solid #f0dcc2;
+  color: #8a5620;
+}
+
 .scenario-actions,
 .credit-segments {
   display: grid;

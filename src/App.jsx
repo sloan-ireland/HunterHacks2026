@@ -10,6 +10,23 @@ import { createCatalog, demoScenarios } from "./lib/catalog";
 import { buildGraphLayout, generateSemesterPlan, getCourseStatuses } from "./lib/planner";
 
 const STORAGE_KEY = "cunypath-front-end-state";
+const EMPTY_DATASET = {
+  source: {
+    college: "Hunter College",
+    major: "Computer Science BA",
+    implementation: "Loading dataset",
+    programUrl: "#",
+  },
+  program: {
+    planCode: "EMPTY",
+    longName: "Loading dataset",
+    degreeDesignation: "BA - Bachelor of Arts",
+    creditsRequired: 0,
+  },
+  planCourseCodes: [],
+  electiveOptions: [],
+  courses: [],
+};
 
 function loadSavedState() {
   try {
@@ -20,11 +37,68 @@ function loadSavedState() {
   }
 }
 
+function resolveDatasetData(dataset, remoteData) {
+  return remoteData ?? dataset.data ?? dataset.fallbackData ?? EMPTY_DATASET;
+}
+
 export default function App() {
   const savedState = useMemo(() => loadSavedState(), []);
   const [datasetId, setDatasetId] = useState(savedState?.datasetId ?? DATASET_OPTIONS[0].id);
   const selectedDataset = useMemo(() => getDatasetById(datasetId), [datasetId]);
-  const catalog = useMemo(() => createCatalog(selectedDataset.data), [selectedDataset]);
+  const [remoteDatasetData, setRemoteDatasetData] = useState(selectedDataset.data ?? null);
+  const [datasetLoadState, setDatasetLoadState] = useState({
+    status: selectedDataset.loadData ? "loading" : "ready",
+    message: "",
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!selectedDataset.loadData) {
+      setRemoteDatasetData(selectedDataset.data ?? null);
+      setDatasetLoadState({ status: "ready", message: "" });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setRemoteDatasetData(null);
+    setDatasetLoadState({ status: "loading", message: "Loading live Supabase catalog..." });
+
+    selectedDataset
+      .loadData()
+      .then((data) => {
+        if (cancelled) {
+          return;
+        }
+
+        setRemoteDatasetData(data);
+        setDatasetLoadState({ status: "ready", message: "Connected to live Supabase catalog." });
+      })
+      .catch((error) => {
+        if (cancelled) {
+          return;
+        }
+
+        console.error(error);
+        setRemoteDatasetData(null);
+        setDatasetLoadState({
+          status: "error",
+          message:
+            "Supabase is reachable, but the anon key cannot see catalog rows yet. The placeholder dataset is still showing until public SELECT access is enabled.",
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedDataset]);
+
+  const rawDataset = useMemo(
+    () => resolveDatasetData(selectedDataset, remoteDatasetData),
+    [remoteDatasetData, selectedDataset],
+  );
+  const catalog = useMemo(() => createCatalog(rawDataset), [rawDataset]);
 
   const [college, setCollege] = useState(savedState?.college ?? catalog.source.college);
   const [major, setMajor] = useState(savedState?.major ?? catalog.source.major);
@@ -35,7 +109,7 @@ export default function App() {
     savedState?.selectedElectiveCodes ?? [],
   );
   const [selectedCourseCode, setSelectedCourseCode] = useState(
-    savedState?.selectedCourseCode ?? catalog.planCourseCodes[0],
+    savedState?.selectedCourseCode ?? catalog.planCourseCodes[0] ?? null,
   );
   const [activeScenarioKey, setActiveScenarioKey] = useState(savedState?.activeScenarioKey ?? null);
 
@@ -48,7 +122,7 @@ export default function App() {
     setCompletedCodes((current) => current.filter((code) => catalog.courseMap[code]));
     setSelectedElectiveCodes((current) => current.filter((code) => catalog.courseMap[code]));
     setSelectedCourseCode((current) =>
-      current && catalog.courseMap[current] ? current : catalog.planCourseCodes[0],
+      current && catalog.courseMap[current] ? current : catalog.planCourseCodes[0] ?? null,
     );
     setActiveScenarioKey(null);
   }, [catalog.courseMap, catalog.planCourseCodes]);
@@ -121,7 +195,7 @@ export default function App() {
     [catalog.courseMap, catalog.planCourseCodes, completedCodes],
   );
 
-  const selectedCourse = catalog.courseMap[selectedCourseCode] ?? null;
+  const selectedCourse = selectedCourseCode ? catalog.courseMap[selectedCourseCode] ?? null : null;
 
   function setCourseCompleted(code, nextChecked) {
     setCompletedCodes((current) => {
@@ -155,7 +229,8 @@ export default function App() {
     const nextRecommendedCode =
       catalog.planCourseCodes.find((code) => !scenario.completed.includes(code)) ??
       scenario.completed[scenario.completed.length - 1] ??
-      catalog.planCourseCodes[0];
+      catalog.planCourseCodes[0] ??
+      null;
 
     setCompletedCodes([...scenario.completed]);
     setIncludeSummer(false);
@@ -172,8 +247,8 @@ export default function App() {
           <p className="eyebrow">CUNYPath</p>
           <h1>Degree planning as a visual roadmap</h1>
           <p className="hero-copy">
-            See the gates, not just the checklist. This standalone frontend runs on placeholder
-            datasets so we can design the experience now and wire in real data later.
+            See the gates, not just the checklist. We can now swap between placeholder data and a
+            live Supabase-backed catalog without changing the rest of the planner experience.
           </p>
         </div>
 
@@ -203,6 +278,7 @@ export default function App() {
             major={major}
             onCollegeChange={setCollege}
             onMajorChange={setMajor}
+            datasetStatus={datasetLoadState}
           />
 
           <section className="panel scenario-panel">
@@ -233,7 +309,7 @@ export default function App() {
             onIncludeSummerChange={setIncludeSummer}
             maxCredits={maxCredits}
             onMaxCreditsChange={setMaxCredits}
-            electiveOptions={catalog.electiveOptions.map((code) => catalog.courseMap[code])}
+            electiveOptions={catalog.electiveOptions.map((code) => catalog.courseMap[code]).filter(Boolean)}
             selectedElectiveCodes={selectedElectiveCodes}
             onToggleElective={toggleElective}
           />

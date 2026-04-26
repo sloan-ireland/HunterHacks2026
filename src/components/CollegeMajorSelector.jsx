@@ -6,7 +6,10 @@ export default function CollegeMajorSelector({
   major,
   onCollegeChange,
   onMajorChange,
+  datasetStatus,
 }) {
+  const statusTone = datasetStatus?.status ?? "ready";
+
   return (
     <section className="panel selector-panel">
       <div className="panel-header">
@@ -45,8 +48,13 @@ export default function CollegeMajorSelector({
       </div>
 
       <p className="muted-copy selector-note">
-        Swap between placeholder datasets without changing the rest of the UI.
+        Swap between placeholder datasets and the live Supabase catalog without changing the rest of
+        the planner UI.
       </p>
+
+      {datasetStatus?.message ? (
+        <p className={`selector-status is-${statusTone}`}>{datasetStatus.message}</p>
+      ) : null}
     </section>
   );
 }
