@@ -164,3 +164,4 @@ export const demoScenarios = {
     completed: ["CSCI 12700", "MATH 12500", "MATH 15000", "STAT 21300", "CSCI 23200"],
   },
 };
+

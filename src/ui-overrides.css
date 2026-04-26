@@ -1,0 +1,172 @@
+.progress-panel-expanded {
+  min-height: 680px;
+}
+
+.progress-filter-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.progress-filter-tabs button,
+.semester-add-button,
+.semester-remove-button {
+  border: 1px solid #d3ddf0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1b2f4c;
+  padding: 9px 10px;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.progress-filter-tabs button.is-active,
+.semester-add-button,
+.semester-remove-button:hover {
+  background: #173b72;
+  border-color: #173b72;
+  color: #ffffff;
+}
+
+.progress-filter-tabs button:hover,
+.semester-add-button:hover,
+.semester-remove-button:hover {
+  box-shadow: 0 10px 18px rgba(42, 76, 131, 0.08);
+}
+
+.progress-search-shell {
+  display: grid;
+  gap: 8px;
+}
+
+.progress-search-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #6d819e;
+}
+
+.progress-search-shell input,
+.semester-add-row select {
+  width: 100%;
+  border: 1px solid #d6e0ef;
+  border-radius: 8px;
+  background: #fbfdff;
+  padding: 11px 12px;
+  color: #122033;
+}
+
+.completed-header-row-subtle {
+  margin-top: 2px;
+  color: #8090a7;
+}
+
+.completed-course-list-tall {
+  max-height: 720px;
+}
+
+.progress-course-copy {
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+}
+
+.progress-course-copy small {
+  display: block;
+  margin-top: 5px;
+  color: #7a8ba4;
+}
+
+.graph-scroll.map-scroll {
+  overflow: hidden;
+}
+
+.map-empty-state {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: #5f728d;
+}
+
+.planner-alert {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #f0dcc2;
+  background: #fff4e8;
+  color: #8a5620;
+  line-height: 1.5;
+}
+
+.graduation-card-editable {
+  display: grid;
+  gap: 12px;
+}
+
+.graduation-course-copy {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  min-width: 0;
+}
+
+.graduation-course-actions {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.semester-remove-button {
+  padding: 6px 9px;
+  font-size: 0.78rem;
+}
+
+.semester-add-stack {
+  display: grid;
+  gap: 8px;
+}
+
+.semester-add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.semester-warning-list {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fff7ea;
+  border: 1px solid #f1dfbe;
+}
+
+.semester-warning-list p {
+  margin: 0;
+  color: #8a5e20;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.empty-term-copy {
+  margin: 0;
+  padding: 6px 0 0;
+}
+
+@media (max-width: 900px) {
+  .progress-filter-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .semester-add-row {
+    grid-template-columns: 1fr;
+  }
+}

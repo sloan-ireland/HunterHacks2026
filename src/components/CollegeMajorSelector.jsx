@@ -1,56 +1,39 @@
-export default function CollegeMajorSelector({
-  datasetId,
-  datasetOptions,
-  onDatasetChange,
-  college,
-  major,
-  onCollegeChange,
-  onMajorChange,
-  datasetStatus,
-}) {
+export default function CollegeMajorSelector({ catalogLabel, college, major, datasetStatus }) {
   const statusTone = datasetStatus?.status ?? "ready";
+  const setupItems = ["Academic Background", "Program", "Plan Options"];
 
   return (
-    <section className="panel selector-panel">
-      <div className="panel-header">
+    <section className="panel setup-panel">
+      <div className="panel-header rail-header">
         <div>
-          <p className="eyebrow">Step 1</p>
-          <h2>Plan setup</h2>
+          <p className="eyebrow">Setup</p>
+          <h2>Program setup</h2>
         </div>
-        <span className="panel-chip">Roadmap</span>
       </div>
 
-      <div className="selector-grid">
-        <label className="field">
-          <span>Catalog</span>
-          <select value={datasetId} onChange={(event) => onDatasetChange(event.target.value)}>
-            {datasetOptions.map((dataset) => (
-              <option key={dataset.id} value={dataset.id}>
-                {dataset.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="field">
-          <span>College</span>
-          <select value={college} onChange={(event) => onCollegeChange(event.target.value)}>
-            <option>Hunter College</option>
-          </select>
-        </label>
-
-        <label className="field">
-          <span>Major</span>
-          <select value={major} onChange={(event) => onMajorChange(event.target.value)}>
-            <option>Computer Science BA</option>
-          </select>
-        </label>
+      <div className="setup-checklist">
+        {setupItems.map((item) => (
+          <div key={item} className="setup-check-row">
+            <span>{item}</span>
+            <span className="setup-check-icon">OK</span>
+          </div>
+        ))}
       </div>
 
-      <p className="muted-copy selector-note">
-        Choose the catalog you want to plan against. The graph, checklist, and semester plan update
-        together.
-      </p>
+      <div className="setup-overview">
+        <div className="setup-card">
+          <span className="setup-card-label">Catalog</span>
+          <strong className="setup-card-value">{catalogLabel}</strong>
+        </div>
+        <div className="setup-card">
+          <span className="setup-card-label">College</span>
+          <strong className="setup-card-value">{college}</strong>
+        </div>
+        <div className="setup-card">
+          <span className="setup-card-label">Major</span>
+          <strong className="setup-card-value">{major}</strong>
+        </div>
+      </div>
 
       {datasetStatus?.message ? (
         <p className={`selector-status is-${statusTone}`}>{datasetStatus.message}</p>

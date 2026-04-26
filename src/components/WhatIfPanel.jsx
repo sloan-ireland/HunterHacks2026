@@ -32,10 +32,10 @@ export default function WhatIfPanel({
         <div className="credit-control control-card">
           <div>
             <strong>Credit load</strong>
-            <small>Adjust between part-time breathing room and a heavier full-time pace.</small>
+            <small>The graduation plan uses this cap when placing and validating courses.</small>
           </div>
           <div className="credit-segments">
-            {[9, 12, 15].map((value) => (
+            {[9, 12, 15, 18].map((value) => (
               <button
                 key={value}
                 type="button"
@@ -51,7 +51,7 @@ export default function WhatIfPanel({
         <div className="elective-picker control-card">
           <div>
             <strong>Add electives</strong>
-            <small>Keep the required path stable and layer in the electives you care about.</small>
+            <small>Electives appear in their own map filter and can be pulled into the graduation plan.</small>
           </div>
 
           <div className="token-list">
