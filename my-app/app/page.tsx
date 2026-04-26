@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -19,6 +19,9 @@ export default function Home() {
   const [expanded, setExpanded] = useState<number[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
 
+  const eligibleRef = useRef<HTMLDivElement>(null);
+  const completedRef = useRef<HTMLDivElement>(null);
+
   const toggleExpand = (index: number) => {
     setExpanded((prev) =>
       prev.includes(index)
@@ -30,38 +33,31 @@ export default function Home() {
   useEffect(() => {
     const fetchCourses = async () => {
       console.log("Fetching courses from Supabase...");
-      const { data, error } = await supabase
-        .from("courses")
-        .select("*");
-
+      const { data, error } = await supabase.from("courses").select("*");
       if (error) {
         console.error("Supabase error:", error);
         return;
       }
-
-      console.log("Fetched data:", data);
       setCourses(data || []);
     };
-
     fetchCourses();
   }, []);
 
   const markAsCompleted = async (course_id: number) => {
-    // Update Supabase
     const { error } = await supabase
       .from("courses")
       .update({ completed: true })
       .eq("course_id", course_id);
 
-    if (error) {
-      console.error("Failed to mark course as completed:", error);
-      return;
+    if (!error) {
+      setCourses(prev =>
+        prev.map(c => c.course_id === course_id ? { ...c, completed: true } : c)
+      );
     }
+  };
 
-    // Update local state
-    setCourses(prev =>
-      prev.map(c => c.course_id === course_id ? { ...c, completed: true } : c)
-    );
+  const scrollToSection = (ref: React.RefObject<HTMLDivElement>) => {
+    ref.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -75,75 +71,82 @@ export default function Home() {
 
         {open && (
           <div className="flex flex-col gap-4 px-4">
-            <div className="hover:bg-gray-800 p-2 rounded">Dashboard</div>
-            <div className="hover:bg-gray-800 p-2 rounded">Completed Courses</div>
-            <div className="hover:bg-gray-800 p-2 rounded">Eligible Courses</div>
-            <div className="hover:bg-gray-800 p-2 rounded">Planner</div>
+            <div
+              className="hover:bg-gray-800/50 p-2 rounded cursor-pointer"
+              onClick={() => scrollToSection(eligibleRef)}
+            >
+              Eligible Courses
+            </div>
+            <div
+              className="hover:bg-gray-800/50 p-2 rounded cursor-pointer"
+              onClick={() => scrollToSection(completedRef)}
+            >
+              Completed Courses
+            </div>
           </div>
         )}
       </div>
 
-      {/* Main */}
+      {/* Main Content */}
       <div className="flex-1 bg-black p-6 text-white overflow-y-auto">
         <h1 className="text-2xl font-bold mb-6">Computer Science Major</h1>
 
-        {/* Dashboard Courses */}
-        <h2 className="text-xl font-semibold mb-4">Dashboard</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.filter(c => !c.completed).map((course, index) => {
-            const isOpen = expanded.includes(index);
-
-            return (
-              <div key={course.course_id} className="bg-gray-800 p-4 rounded-xl">
-                {/* HEADER */}
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h2 className="text-lg font-semibold">{course.code}</h2>
-                    <h3 className="text-sm text-gray-400">{course.title}</h3>
-                  </div>
-
-                  <button onClick={() => toggleExpand(index)}>
-                    <Image
-                      src="/drop_down.jpg"
-                      alt="toggle"
-                      width={20}
-                      height={20}
-                      className={isOpen ? "rotate-180" : ""}
-                    />
-                  </button>
-                </div>
-
-                {/* DETAILS */}
-                {isOpen && (
-                  <div className="text-sm mt-3 space-y-2">
-                    <p><b>ID:</b> {course.course_id}</p>
-                    <p><b>Description:</b> {course.descriptions?.[0] || "No description"}</p>
-                    <p><b>Prerequisites:</b> {course.prerequisites || "None"}</p>
-                    <p><b>Corequisites:</b> {course.corequisites || "None"}</p>
-
-                    {/* MARK AS COMPLETED */}
-                    <button
-                      className="mt-2 px-2 py-1 bg-green-600 rounded hover:bg-green-500"
-                      onClick={() => markAsCompleted(course.course_id)}
-                    >
-                      Mark as Completed
+        {/* Eligible Courses */}
+        <div ref={eligibleRef}>
+          <h2 className="text-xl font-semibold mb-4">Eligible Courses</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {courses.filter(c => !c.completed).map((course, index) => {
+              const isOpen = expanded.includes(index);
+              return (
+                <div key={course.course_id} className="bg-gray-800/80 p-4 rounded-xl">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-lg font-semibold">{course.code}</h2>
+                      <h3 className="text-sm text-gray-400">{course.title}</h3>
+                    </div>
+                    <button onClick={() => toggleExpand(index)}>
+                      <Image
+                        src="/drop_down.jpg"
+                        alt="toggle"
+                        width={20}
+                        height={20}
+                        className={isOpen ? "rotate-180" : ""}
+                      />
                     </button>
                   </div>
-                )}
-              </div>
-            );
-          })}
+
+                  {isOpen && (
+                    <div className="text-sm mt-3 space-y-2">
+                      <p><b>ID:</b> {course.course_id}</p>
+                      <p><b>Description:</b> {course.descriptions?.[0] || "No description"}</p>
+                      <p><b>Prerequisites:</b> {course.prerequisites || "None"}</p>
+                      <p><b>Corequisites:</b> {course.corequisites || "None"}</p>
+
+                      <button
+                        className="mt-2 px-2 py-1 bg-green-600 rounded hover:bg-green-500"
+                        onClick={() => markAsCompleted(course.course_id)}
+                      >
+                        Mark as Completed
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Completed Courses */}
-        <h2 className="text-xl font-semibold mt-10 mb-4">Completed Courses</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.filter(c => c.completed).map((course) => (
-            <div key={course.course_id} className="bg-gray-700 p-4 rounded-xl text-gray-300">
-              <h3 className="font-semibold">{course.code}</h3>
-              <p>{course.title}</p>
-            </div>
-          ))}
+        <div ref={completedRef} className="mt-10">
+          <h2 className="text-xl font-semibold mb-4">Completed Courses</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {courses.filter(c => c.completed).map((course) => (
+              <div key={course.course_id} className="bg-gray-700/80 p-4 rounded-xl text-gray-300">
+                <h3 className="font-semibold">{course.code}</h3>
+                <p>{course.title}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
