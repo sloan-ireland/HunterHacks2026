@@ -29,4 +29,6 @@ Thumbs.db
 # Catalog sync generated data
 scripts/catalog-sync/courses.json
 scripts/catalog-sync/normalized-courses.json
+scripts/catalog-sync/courses-*.json
+scripts/catalog-sync/normalized-*.json
 scripts/catalog-sync/last-results.html

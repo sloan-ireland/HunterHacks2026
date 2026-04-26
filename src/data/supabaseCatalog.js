@@ -15,6 +15,8 @@ const seasonRank = {
   fall: 3,
 };
 
+const SUPPORT_SUBJECTS = new Set(["MATH", "STAT"]);
+
 function normalizeCode(code) {
   if (!code) {
     return "";
@@ -36,6 +38,37 @@ function extractCodes(text) {
   }
 
   return [...new Set((String(text).match(/[A-Z]{2,}\s?\d{5}/g) ?? []).map(normalizeCode))];
+}
+
+function getCourseCode(row) {
+  return normalizeCode(row.code ?? `${row.subject} ${row.course_number}`);
+}
+
+function getSubjectFromCode(code) {
+  return code.split(" ")[0] ?? "";
+}
+
+function getReferencedSupportCodes(rows) {
+  const supportCodes = new Set();
+
+  rows
+    .filter((row) => getCourseCode(row).startsWith("CSCI "))
+    .forEach((row) => {
+      [
+        row.prerequisites,
+        row.corequisites,
+        row.pre_or_corequisites,
+        row.enrollment_requirements,
+      ].forEach((text) => {
+        extractCodes(text).forEach((code) => {
+          if (SUPPORT_SUBJECTS.has(getSubjectFromCode(code))) {
+            supportCodes.add(code);
+          }
+        });
+      });
+    });
+
+  return supportCodes;
 }
 
 function normalizeSeason(value) {
@@ -165,6 +198,7 @@ export async function fetchSupabaseCatalogDataset() {
         "prerequisites",
         "corequisites",
         "pre_or_corequisites",
+        "enrollment_requirements",
         "descriptions",
       ].join(","),
     ),
@@ -219,9 +253,24 @@ export async function fetchSupabaseCatalogDataset() {
   const visibleCourses = filteredCourses.length
     ? filteredCourses
     : scopedCourses.filter((row) => isUndergraduateCareer(row.career));
+  const referencedSupportCodes = getReferencedSupportCodes(visibleCourses);
+  const frontendVisibleCourses = visibleCourses.filter((row) => {
+    const code = getCourseCode(row);
+    const subject = getSubjectFromCode(code);
 
-  const groupedByCode = visibleCourses.reduce((accumulator, row) => {
-    const code = normalizeCode(row.code ?? `${row.subject} ${row.course_number}`);
+    if (code.startsWith("CSCI ")) {
+      return true;
+    }
+
+    if (SUPPORT_SUBJECTS.has(subject)) {
+      return referencedSupportCodes.has(code);
+    }
+
+    return mockHunterCsPlaceholder.planCourseCodes.includes(code);
+  });
+
+  const groupedByCode = frontendVisibleCourses.reduce((accumulator, row) => {
+    const code = getCourseCode(row);
     if (!code) {
       return accumulator;
     }

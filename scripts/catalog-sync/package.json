@@ -9,7 +9,18 @@
     "normalize": "node normalize-courses.js",
     "import": "node import-supabase.js",
     "sync": "node scrape.js && node normalize-courses.js && node import-supabase.js",
-    "dry-run": "node import-supabase.js --dry-run"
+    "dry-run": "node import-supabase.js --dry-run",
+    "scrape:math": "node scrape.js --subject Mathematics --subject-value MATH --output courses-math.json",
+    "normalize:math": "node normalize-courses.js --input courses-math.json --output normalized-math.json",
+    "dry-run:math": "node import-supabase.js --input normalized-math.json --dry-run",
+    "import:math": "node import-supabase.js --input normalized-math.json",
+    "sync:math": "npm run scrape:math && npm run normalize:math && npm run import:math",
+    "scrape:stat": "node scrape.js --subject Statistics --subject-value STAT --output courses-stat.json",
+    "normalize:stat": "node normalize-courses.js --input courses-stat.json --output normalized-stat.json",
+    "dry-run:stat": "node import-supabase.js --input normalized-stat.json --dry-run",
+    "import:stat": "node import-supabase.js --input normalized-stat.json",
+    "sync:stat": "npm run scrape:stat && npm run normalize:stat && npm run import:stat",
+    "sync:support": "npm run sync:math && npm run sync:stat"
   },
   "dependencies": {
     "playwright": "^1.59.1"

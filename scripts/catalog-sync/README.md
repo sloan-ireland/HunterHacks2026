@@ -33,7 +33,20 @@ To run the full pipeline:
 npm run sync
 ```
 
-The generated `courses.json` and `normalized-courses.json` files are ignored by Git.
+To scrape and import support departments that CSCI prerequisites reference:
+
+```powershell
+npm run sync:math
+npm run sync:stat
+```
+
+Or run both:
+
+```powershell
+npm run sync:support
+```
+
+The generated `courses*.json` and `normalized*.json` files are ignored by Git.
 
 ## Schema
 
