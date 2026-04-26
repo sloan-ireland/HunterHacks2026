@@ -4,10 +4,20 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 
+interface Course {
+  course_id: number;
+  code: string;
+  title: string;
+  prerequisites?: string;
+  corequisites?: string;
+  descriptions?: string[];
+  completed: boolean;
+}
+
 export default function Home() {
   const [open, setOpen] = useState(true);
   const [expanded, setExpanded] = useState<number[]>([]);
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
 
   const toggleExpand = (index: number) => {
     setExpanded((prev) =>
@@ -19,23 +29,40 @@ export default function Home() {
 
   useEffect(() => {
     const fetchCourses = async () => {
-      console.log("Fetching courses from Supabase..."); // ✅ debug log
-  
+      console.log("Fetching courses from Supabase...");
       const { data, error } = await supabase
         .from("courses")
         .select("*");
-  
+
       if (error) {
         console.error("Supabase error:", error);
         return;
       }
-  
-      console.log("Fetched data:", data); // ✅ log what comes back
+
+      console.log("Fetched data:", data);
       setCourses(data || []);
     };
-  
+
     fetchCourses();
   }, []);
+
+  const markAsCompleted = async (course_id: number) => {
+    // Update Supabase
+    const { error } = await supabase
+      .from("courses")
+      .update({ completed: true })
+      .eq("course_id", course_id);
+
+    if (error) {
+      console.error("Failed to mark course as completed:", error);
+      return;
+    }
+
+    // Update local state
+    setCourses(prev =>
+      prev.map(c => c.course_id === course_id ? { ...c, completed: true } : c)
+    );
+  };
 
   return (
     <div className="flex h-screen">
@@ -60,14 +87,14 @@ export default function Home() {
       <div className="flex-1 bg-black p-6 text-white overflow-y-auto">
         <h1 className="text-2xl font-bold mb-6">Computer Science Major</h1>
 
+        {/* Dashboard Courses */}
+        <h2 className="text-xl font-semibold mb-4">Dashboard</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
-          {courses.map((course, index) => {
+          {courses.filter(c => !c.completed).map((course, index) => {
             const isOpen = expanded.includes(index);
 
             return (
               <div key={course.course_id} className="bg-gray-800 p-4 rounded-xl">
-
                 {/* HEADER */}
                 <div className="flex justify-between items-center">
                   <div>
@@ -89,33 +116,34 @@ export default function Home() {
                 {/* DETAILS */}
                 {isOpen && (
                   <div className="text-sm mt-3 space-y-2">
+                    <p><b>ID:</b> {course.course_id}</p>
+                    <p><b>Description:</b> {course.descriptions?.[0] || "No description"}</p>
+                    <p><b>Prerequisites:</b> {course.prerequisites || "None"}</p>
+                    <p><b>Corequisites:</b> {course.corequisites || "None"}</p>
 
-                    <p>
-                      <b>ID:</b> {course.course_id}
-                    </p>
-
-                    <p>
-                      <b>Description:</b>{" "}
-                      {course.descriptions?.[0] || "No description"}
-                    </p>
-
-                    <p>
-                      <b>Prerequisites:</b>{" "}
-                      {course.prerequisites || "None"}
-                    </p>
-
-                    <p>
-                      <b>Corequisites:</b>{" "}
-                      {course.corequisites || "None"}
-                    </p>
-
+                    {/* MARK AS COMPLETED */}
+                    <button
+                      className="mt-2 px-2 py-1 bg-green-600 rounded hover:bg-green-500"
+                      onClick={() => markAsCompleted(course.course_id)}
+                    >
+                      Mark as Completed
+                    </button>
                   </div>
                 )}
-
               </div>
             );
           })}
+        </div>
 
+        {/* Completed Courses */}
+        <h2 className="text-xl font-semibold mt-10 mb-4">Completed Courses</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {courses.filter(c => c.completed).map((course) => (
+            <div key={course.course_id} className="bg-gray-700 p-4 rounded-xl text-gray-300">
+              <h3 className="font-semibold">{course.code}</h3>
+              <p>{course.title}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
