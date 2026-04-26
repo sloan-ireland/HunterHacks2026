@@ -15,14 +15,14 @@ export default function CollegeMajorSelector({
       <div className="panel-header">
         <div>
           <p className="eyebrow">Step 1</p>
-          <h2>Setup</h2>
+          <h2>Plan setup</h2>
         </div>
-        <span className="panel-chip">MVP</span>
+        <span className="panel-chip">Roadmap</span>
       </div>
 
       <div className="selector-grid">
         <label className="field">
-          <span>Dataset</span>
+          <span>Catalog</span>
           <select value={datasetId} onChange={(event) => onDatasetChange(event.target.value)}>
             {datasetOptions.map((dataset) => (
               <option key={dataset.id} value={dataset.id}>
@@ -48,8 +48,8 @@ export default function CollegeMajorSelector({
       </div>
 
       <p className="muted-copy selector-note">
-        Swap between placeholder datasets and the live Supabase catalog without changing the rest of
-        the planner UI.
+        Choose the catalog you want to plan against. The graph, checklist, and semester plan update
+        together.
       </p>
 
       {datasetStatus?.message ? (

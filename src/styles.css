@@ -2,7 +2,7 @@
   color-scheme: light;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #f3f6fb;
+  background: #f4f7fb;
   color: #122033;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -18,8 +18,8 @@ body {
   margin: 0;
   min-width: 320px;
   background:
-    radial-gradient(circle at top left, rgba(27, 82, 181, 0.08), transparent 28%),
-    linear-gradient(180deg, #f8fbff 0%, #eff4fb 100%);
+    radial-gradient(circle at top left, rgba(36, 84, 171, 0.11), transparent 26%),
+    linear-gradient(180deg, #f9fbff 0%, #eff4fb 46%, #f7f9fd 100%);
 }
 
 button,
@@ -33,36 +33,111 @@ button {
 }
 
 .app-shell {
-  max-width: 1600px;
+  max-width: 1720px;
   margin: 0 auto;
   padding: 24px;
 }
 
 .app-header {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.8fr);
+  grid-template-columns: minmax(0, 1.3fr) minmax(360px, 0.9fr);
   gap: 24px;
-  align-items: end;
+  align-items: stretch;
   margin-bottom: 24px;
+  padding: 28px;
+  border: 1px solid rgba(20, 38, 64, 0.08);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(18, 46, 92, 0.96), rgba(39, 82, 150, 0.9)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0));
+  box-shadow: 0 24px 54px rgba(17, 34, 63, 0.14);
+}
+
+.hero-content {
+  min-width: 0;
+}
+
+.hero-kicker-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #e7f0ff;
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 
 .app-header h1 {
-  margin: 0;
-  font-size: clamp(2rem, 4vw, 3.7rem);
-  line-height: 1.02;
+  margin: 12px 0 0;
+  max-width: 11ch;
+  color: #ffffff;
+  font-size: clamp(2.4rem, 4vw, 4rem);
+  line-height: 0.98;
 }
 
 .hero-copy {
-  max-width: 64ch;
-  margin: 14px 0 0;
+  max-width: 62ch;
+  margin: 18px 0 0;
   font-size: 1rem;
-  line-height: 1.6;
-  color: #4a5f7a;
+  line-height: 1.7;
+  color: rgba(234, 241, 252, 0.88);
+}
+
+.hero-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.hero-highlights span {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f4f7ff;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.hero-status {
+  margin: 18px 0 0;
+  max-width: 620px;
+  padding: 13px 15px;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.hero-status.is-loading {
+  background: rgba(255, 255, 255, 0.11);
+  color: #eff5ff;
+}
+
+.hero-status.is-ready {
+  background: rgba(217, 246, 227, 0.12);
+  color: #ecfff4;
+}
+
+.hero-status.is-error {
+  background: rgba(255, 226, 191, 0.14);
+  color: #fff6ea;
 }
 
 .hero-metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 14px;
 }
 
@@ -70,21 +145,34 @@ button {
 .panel {
   border: 1px solid rgba(20, 38, 64, 0.08);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 18px 40px rgba(23, 42, 69, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 16px 34px rgba(23, 42, 69, 0.08);
   backdrop-filter: blur(12px);
 }
 
 .metric-card {
-  min-height: 120px;
+  min-height: 118px;
   padding: 18px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
+.metric-card.metric-strong {
+  background: linear-gradient(180deg, #ffffff, #f3f7ff);
+}
+
+.metric-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #5c7291;
+}
+
 .metric-card strong {
-  font-size: 1.8rem;
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+  line-height: 1;
+  color: #10243f;
 }
 
 .metric-card span {
@@ -93,7 +181,7 @@ button {
 
 .dashboard {
   display: grid;
-  grid-template-columns: minmax(300px, 340px) minmax(0, 1fr) minmax(290px, 340px);
+  grid-template-columns: minmax(310px, 350px) minmax(0, 1fr) minmax(300px, 352px);
   gap: 18px;
   align-items: start;
 }
@@ -105,7 +193,8 @@ button {
   gap: 18px;
 }
 
-.dashboard-main {
+.dashboard-main,
+.dashboard-rail {
   min-width: 0;
 }
 
@@ -114,7 +203,7 @@ button {
 }
 
 .panel {
-  padding: 18px;
+  padding: 20px;
 }
 
 .panel-header {
@@ -136,7 +225,11 @@ button {
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: #466da8;
+  color: #5d7fb2;
+}
+
+.app-header .eyebrow {
+  color: rgba(216, 230, 255, 0.86);
 }
 
 .panel-chip,
@@ -181,6 +274,10 @@ button {
   color: #122033;
 }
 
+.selector-note {
+  margin-top: 2px;
+}
+
 .selector-status {
   margin: 0;
   padding: 12px 14px;
@@ -214,7 +311,7 @@ button {
 }
 
 .scenario-actions {
-  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(116px, 1fr));
 }
 
 .credit-segments {
@@ -233,7 +330,8 @@ button {
   transition:
     background 140ms ease,
     border-color 140ms ease,
-    transform 140ms ease;
+    transform 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .scenario-actions button:hover,
@@ -242,14 +340,10 @@ button {
 .token-button:hover {
   border-color: #8ea9d4;
   background: #f5f9ff;
+  box-shadow: 0 10px 20px rgba(42, 76, 131, 0.08);
 }
 
-.scenario-actions .is-active {
-  background: #18386d;
-  border-color: #18386d;
-  color: #ffffff;
-}
-
+.scenario-actions .is-active,
 .credit-segments .is-active,
 .token-button.is-active {
   background: #18386d;
@@ -266,6 +360,13 @@ button {
   align-items: start;
 }
 
+.control-card {
+  padding: 14px;
+  border-radius: 8px;
+  background: #f7faff;
+  border: 1px solid #e2eaf6;
+}
+
 .toggle-row small,
 .credit-control small,
 .elective-picker small {
@@ -279,9 +380,13 @@ button {
   width: 20px;
   height: 20px;
   margin-top: 2px;
+  accent-color: #18386d;
 }
 
-.graph-panel {
+.graph-panel,
+.semester-panel,
+.detail-panel,
+.checklist-panel {
   min-width: 0;
 }
 
@@ -341,15 +446,15 @@ button {
   border-radius: 8px;
   border: 1px solid #dce5f3;
   background:
-    linear-gradient(180deg, rgba(244, 248, 255, 0.9), rgba(248, 250, 255, 0.96)),
-    linear-gradient(90deg, rgba(28, 52, 93, 0.025) 1px, transparent 1px),
-    linear-gradient(rgba(28, 52, 93, 0.025) 1px, transparent 1px);
-  background-size: auto, 140px 140px, 140px 140px;
+    linear-gradient(180deg, rgba(244, 248, 255, 0.96), rgba(249, 251, 255, 0.98)),
+    linear-gradient(90deg, rgba(28, 52, 93, 0.024) 1px, transparent 1px),
+    linear-gradient(rgba(28, 52, 93, 0.024) 1px, transparent 1px);
+  background-size: auto, 144px 144px, 144px 144px;
 }
 
 .graph-surface {
   position: relative;
-  min-height: 520px;
+  min-height: 560px;
 }
 
 .graph-stage {
@@ -369,17 +474,17 @@ button {
 }
 
 .graph-edge-underlay {
-  stroke: rgba(255, 255, 255, 0.95);
+  stroke: rgba(255, 255, 255, 0.98);
   stroke-width: 5.5;
 }
 
 .graph-edge-foreground {
-  stroke: rgba(102, 128, 170, 0.34);
-  stroke-width: 2.2;
+  stroke: rgba(102, 128, 170, 0.32);
+  stroke-width: 2.1;
 }
 
 .graph-edge-terminal {
-  fill: rgba(102, 128, 170, 0.42);
+  fill: rgba(102, 128, 170, 0.4);
 }
 
 .graph-node {
@@ -392,7 +497,7 @@ button {
   border-radius: 8px;
   border: 1px solid transparent;
   text-align: left;
-  box-shadow: 0 10px 24px rgba(29, 49, 79, 0.08);
+  box-shadow: 0 12px 26px rgba(29, 49, 79, 0.09);
   overflow: visible;
   transition:
     border-color 140ms ease,
@@ -513,25 +618,35 @@ button {
 }
 
 .semester-summary {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 16px;
 }
 
 .semester-summary div {
-  flex: 1;
-  padding: 14px;
+  padding: 15px;
   border-radius: 8px;
-  background: #f4f8fe;
+  background: #f5f8fe;
   border: 1px solid #dce6f5;
+}
+
+.summary-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #5d7699;
 }
 
 .semester-summary strong {
   display: block;
-  font-size: 1.3rem;
+  margin-top: 8px;
+  font-size: 1.4rem;
+  color: #142745;
 }
 
-.semester-summary span {
+.semester-summary span:last-child {
   color: #607590;
 }
 
@@ -544,15 +659,16 @@ button {
 .semester-card {
   border: 1px solid #dce6f5;
   border-radius: 8px;
-  background: #fbfdff;
+  background: linear-gradient(180deg, #fbfdff, #f8fbff);
   padding: 14px;
-  min-height: 220px;
+  min-height: 240px;
 }
 
 .semester-card.is-idle {
-  background: #f6f8fb;
+  background: #f7f9fc;
 }
 
+.semester-card-topline,
 .semester-card-header,
 .semester-course-row,
 .course-row-topline,
@@ -562,6 +678,32 @@ button {
   justify-content: space-between;
   gap: 12px;
   align-items: start;
+}
+
+.semester-card-index {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #5f7798;
+}
+
+.semester-card-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #e9f2ff;
+  color: #315b99;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.semester-card-chip.is-idle {
+  background: #eef2f7;
+  color: #5b6f88;
+}
+
+.semester-card-header {
+  margin-top: 10px;
 }
 
 .semester-card-header span,
@@ -591,6 +733,10 @@ button {
   line-height: 1.45;
 }
 
+.semester-empty-copy {
+  margin-top: 26px;
+}
+
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -601,6 +747,7 @@ button {
 .detail-grid dd {
   margin: 6px 0 0;
   font-weight: 700;
+  color: #152945;
 }
 
 .detail-note {
@@ -635,7 +782,7 @@ button {
 
 .checklist-groups {
   display: grid;
-  gap: 18px;
+  gap: 20px;
 }
 
 .checklist-group {
@@ -656,7 +803,7 @@ button {
 .course-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 10px;
+  gap: 12px;
   margin-top: 12px;
 }
 
@@ -669,10 +816,21 @@ button {
   border-radius: 8px;
   border: 1px solid #dce6f5;
   background: #fbfdff;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.course-row:hover {
+  transform: translateY(-1px);
+  border-color: #c7d6ef;
+  box-shadow: 0 12px 24px rgba(29, 49, 79, 0.07);
 }
 
 .course-row input {
   margin-top: 4px;
+  accent-color: #18386d;
 }
 
 .course-row.is-completed {
@@ -715,6 +873,7 @@ button {
 
 @media (max-width: 760px) {
   .hero-metrics,
+  .semester-summary,
   .scenario-actions,
   .credit-segments,
   .detail-grid {
@@ -736,6 +895,10 @@ button {
   .panel-header,
   .app-header {
     display: grid;
+  }
+
+  .hero-highlights {
+    gap: 8px;
   }
 
   .metric-card {

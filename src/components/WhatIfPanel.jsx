@@ -11,13 +11,13 @@ export default function WhatIfPanel({
     <section className="panel what-if-panel">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">What-if</p>
-          <h2>Planning controls</h2>
+          <p className="eyebrow">Plan controls</p>
+          <h2>Shape the roadmap</h2>
         </div>
       </div>
 
       <div className="what-if-stack">
-        <label className="toggle-row">
+        <label className="toggle-row control-card">
           <span>
             <strong>Include summer courses</strong>
             <small>Compress the path when summer offerings exist.</small>
@@ -29,10 +29,10 @@ export default function WhatIfPanel({
           />
         </label>
 
-        <div className="credit-control">
+        <div className="credit-control control-card">
           <div>
             <strong>Credit load</strong>
-            <small>Adjust between part-time and a heavier full-time schedule.</small>
+            <small>Adjust between part-time breathing room and a heavier full-time pace.</small>
           </div>
           <div className="credit-segments">
             {[9, 12, 15].map((value) => (
@@ -48,10 +48,10 @@ export default function WhatIfPanel({
           </div>
         </div>
 
-        <div className="elective-picker">
+        <div className="elective-picker control-card">
           <div>
-            <strong>Try adding electives</strong>
-            <small>We keep the required path stable and layer electives into the plan.</small>
+            <strong>Add electives</strong>
+            <small>Keep the required path stable and layer in the electives you care about.</small>
           </div>
 
           <div className="token-list">

@@ -305,7 +305,7 @@ export async function fetchSupabaseCatalogDataset() {
       longName: "Computer Science BA with live Supabase catalog",
       planCode: "COMPSCI-BA-SUPABASE-LIVE",
     },
-    datasetStatusMessage: `Pulled ${coursesForFrontend.length} courses from Supabase across ${recentTerms.length} term${recentTerms.length === 1 ? "" : "s"}${termSummary ? ` (${termSummary})` : ""}.`,
+    datasetStatusMessage: `Current catalog loaded with ${coursesForFrontend.length} courses across ${recentTerms.length} term${recentTerms.length === 1 ? "" : "s"}${termSummary ? ` (${termSummary})` : ""}.`,
     planCourseCodes: mockHunterCsPlaceholder.planCourseCodes.filter((code) => availableCodes.has(code)),
     electiveOptions: mockHunterCsPlaceholder.electiveOptions.filter((code) => availableCodes.has(code)),
     courses: coursesForFrontend,

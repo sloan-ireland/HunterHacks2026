@@ -34,20 +34,20 @@ const mockHunterCsBalanced = {
 export const DATASET_OPTIONS = [
   {
     id: "hunter-placeholder",
-    label: "Hunter CS Placeholder",
-    description: "Curated demo data for frontend work and pitch flow.",
+    label: "Hunter CS Demo",
+    description: "Curated sample roadmap for product design and presentation flow.",
     data: mockHunterCsPlaceholder,
   },
   {
     id: "hunter-placeholder-balanced",
-    label: "Hunter CS Placeholder (Balanced)",
-    description: "Alternate placeholder plan to test dataset switching in the UI.",
+    label: "Hunter CS Demo (Balanced)",
+    description: "Alternate sample roadmap for comparing pacing and course flow.",
     data: mockHunterCsBalanced,
   },
   {
     id: "hunter-live-supabase",
-    label: "Hunter CS Live (Supabase)",
-    description: "Reads live catalog rows from Supabase while keeping the Hunter CS roadmap stable.",
+    label: "Hunter CS Current Catalog",
+    description: "Uses the current catalog while keeping the Hunter CS roadmap stable.",
     fallbackData: mockHunterCsPlaceholder,
     loadData: fetchSupabaseCatalogDataset,
   },

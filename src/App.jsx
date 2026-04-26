@@ -63,7 +63,7 @@ export default function App() {
     }
 
     setRemoteDatasetData(null);
-    setDatasetLoadState({ status: "loading", message: "Loading live Supabase catalog..." });
+    setDatasetLoadState({ status: "loading", message: "Refreshing the latest catalog..." });
 
     selectedDataset
       .loadData()
@@ -75,7 +75,7 @@ export default function App() {
         setRemoteDatasetData(data);
         setDatasetLoadState({
           status: "ready",
-          message: data.datasetStatusMessage ?? "Connected to live Supabase catalog.",
+          message: data.datasetStatusMessage ?? "Current catalog loaded.",
         });
       })
       .catch((error) => {
@@ -87,8 +87,7 @@ export default function App() {
         setRemoteDatasetData(null);
         setDatasetLoadState({
           status: "error",
-          message:
-            "Supabase is reachable, but the anon key cannot see catalog rows yet. The placeholder dataset is still showing until public SELECT access is enabled.",
+          message: "The current catalog could not be refreshed, so the planner is showing the built-in catalog for now.",
         });
       });
 
@@ -197,6 +196,14 @@ export default function App() {
       ),
     [catalog.courseMap, catalog.planCourseCodes, completedCodes],
   );
+  const completedTrackedCount = useMemo(
+    () => catalog.planCourseCodes.filter((code) => completedCodes.includes(code)).length,
+    [catalog.planCourseCodes, completedCodes],
+  );
+  const activeSemesterCount = useMemo(
+    () => plan.semesters.filter((semester) => semester.courses.length).length,
+    [plan.semesters],
+  );
 
   const selectedCourse = selectedCourseCode ? catalog.courseMap[selectedCourseCode] ?? null : null;
 
@@ -246,27 +253,43 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <div>
-          <p className="eyebrow">CUNYPath</p>
-          <h1>Degree planning as a visual roadmap</h1>
+        <div className="hero-content">
+          <div className="hero-kicker-row">
+            <p className="eyebrow">CUNYPath</p>
+            <span className="hero-tag">Hunter College</span>
+          </div>
+          <h1>Build the clearest path to graduation.</h1>
           <p className="hero-copy">
-            See the gates, not just the checklist. We can now swap between placeholder data and a
-            live Supabase-backed catalog without changing the rest of the planner experience.
+            Mark what you have already finished, uncover the hidden gates in the curriculum, and
+            see a semester plan that keeps momentum instead of surprises.
           </p>
+          <div className="hero-highlights">
+            <span>Interactive prerequisite map</span>
+            <span>Semester-by-semester plan</span>
+            <span>What-if scheduling controls</span>
+          </div>
+          {datasetLoadState?.message ? (
+            <p className={`hero-status is-${datasetLoadState.status}`}>{datasetLoadState.message}</p>
+          ) : null}
         </div>
 
         <div className="hero-metrics">
-          <div className="metric-card">
+          <div className="metric-card metric-strong">
+            <span className="metric-label">Catalog courses</span>
             <strong>{catalog.courses.length}</strong>
-            <span>courses loaded</span>
+            <span>available in this planning view</span>
           </div>
           <div className="metric-card">
-            <strong>{catalog.planCourseCodes.length}</strong>
-            <span>planner path courses</span>
+            <span className="metric-label">Roadmap progress</span>
+            <strong>
+              {completedTrackedCount}/{catalog.planCourseCodes.length}
+            </strong>
+            <span>planner courses marked complete</span>
           </div>
           <div className="metric-card">
-            <strong>{selectedDataset.label}</strong>
-            <span>active dataset</span>
+            <span className="metric-label">Projected finish</span>
+            <strong>{plan.projectedGraduation}</strong>
+            <span>{activeSemesterCount} active terms in the current plan</span>
           </div>
         </div>
       </header>
@@ -287,8 +310,8 @@ export default function App() {
           <section className="panel scenario-panel">
             <div className="panel-header">
               <div>
-                <p className="eyebrow">Demo scenarios</p>
-                <h2>Fast switches</h2>
+                <p className="eyebrow">Starting points</p>
+                <h2>Jump to a realistic snapshot</h2>
               </div>
             </div>
 
