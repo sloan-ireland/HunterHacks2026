@@ -25,3 +25,8 @@ Thumbs.db
 # Cache
 .cache/
 .vite/
+
+# Catalog sync generated data
+scripts/catalog-sync/courses.json
+scripts/catalog-sync/normalized-courses.json
+scripts/catalog-sync/last-results.html
