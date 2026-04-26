@@ -73,7 +73,10 @@ export default function App() {
         }
 
         setRemoteDatasetData(data);
-        setDatasetLoadState({ status: "ready", message: "Connected to live Supabase catalog." });
+        setDatasetLoadState({
+          status: "ready",
+          message: data.datasetStatusMessage ?? "Connected to live Supabase catalog.",
+        });
       })
       .catch((error) => {
         if (cancelled) {

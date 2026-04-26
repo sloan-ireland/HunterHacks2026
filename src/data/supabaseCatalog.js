@@ -42,9 +42,7 @@ function normalizeSeason(value) {
   return String(value ?? "").trim().toLowerCase();
 }
 
-function compareTermRows(left, right, termById) {
-  const leftTerm = termById[left.term_id] ?? {};
-  const rightTerm = termById[right.term_id] ?? {};
+function compareTermsDescending(leftTerm, rightTerm) {
   const yearDelta = Number(rightTerm.year ?? 0) - Number(leftTerm.year ?? 0);
 
   if (yearDelta !== 0) {
@@ -52,6 +50,12 @@ function compareTermRows(left, right, termById) {
   }
 
   return (seasonRank[normalizeSeason(rightTerm.season)] ?? -1) - (seasonRank[normalizeSeason(leftTerm.season)] ?? -1);
+}
+
+function compareTermRows(left, right, termById) {
+  const leftTerm = termById[left.term_id] ?? {};
+  const rightTerm = termById[right.term_id] ?? {};
+  return compareTermsDescending(leftTerm, rightTerm);
 }
 
 function normalizeDescription(rawValue) {
@@ -170,7 +174,6 @@ export async function fetchSupabaseCatalogDataset() {
         "section_id",
         "course_id",
         "term_id",
-        "details_url",
         "description",
         "status",
         "prerequisites",
@@ -188,9 +191,12 @@ export async function fetchSupabaseCatalogDataset() {
 
   const hunterInstitution =
     institutions.find((row) => /hunter/i.test(row.name ?? row.source_value ?? "")) ?? institutions[0] ?? null;
+  const recentTerms = [...terms].sort(compareTermsDescending).slice(0, 2);
+  const recentTermIds = new Set(recentTerms.map((term) => term.term_id));
   const termById = Object.fromEntries(terms.map((row) => [row.term_id, row]));
   const subjectById = Object.fromEntries(subjects.map((row) => [row.subject_id, row]));
-  const sectionsByCourseId = sections.reduce((accumulator, row) => {
+  const scopedSections = sections.filter((row) => recentTermIds.has(row.term_id));
+  const sectionsByCourseId = scopedSections.reduce((accumulator, row) => {
     accumulator[row.course_id] ??= [];
     accumulator[row.course_id].push(row);
     return accumulator;
@@ -205,13 +211,14 @@ export async function fetchSupabaseCatalogDataset() {
     return normalized === "ugrd" || normalized === "undergraduate";
   };
 
-  const filteredCourses = courses.filter((row) => {
+  const scopedCourses = courses.filter((row) => recentTermIds.has(row.term_id));
+  const filteredCourses = scopedCourses.filter((row) => {
     const matchesInstitution = hunterInstitution ? row.institution_id === hunterInstitution.institution_id : true;
     return matchesInstitution && isUndergraduateCareer(row.career);
   });
   const visibleCourses = filteredCourses.length
     ? filteredCourses
-    : courses.filter((row) => isUndergraduateCareer(row.career));
+    : scopedCourses.filter((row) => isUndergraduateCareer(row.career));
 
   const groupedByCode = visibleCourses.reduce((accumulator, row) => {
     const code = normalizeCode(row.code ?? `${row.subject} ${row.course_number}`);
@@ -242,7 +249,6 @@ export async function fetchSupabaseCatalogDataset() {
         representative.corequisites ??
           representativeSections.find((section) => section.corequisites)?.corequisites,
       );
-      const detailsUrl = representativeSections.find((section) => section.details_url)?.details_url;
       const sectionDescription = representativeSections.find((section) => section.description)?.description;
       const credits =
         Number(representative.max_units ?? representative.min_units ?? metadata.credits ?? 0) || metadata.credits || 0;
@@ -275,12 +281,17 @@ export async function fetchSupabaseCatalogDataset() {
         difficulty: inferDifficulty(courseNumber, metadata.difficulty),
         subject,
         courseNumber,
-        sourceUrl: detailsUrl ?? metadata.sourceUrl ?? "#",
+        sourceUrl: null,
       };
     })
     .sort((left, right) => left.code.localeCompare(right.code));
 
   const availableCodes = new Set(coursesForFrontend.map((course) => course.code));
+
+  const termSummary = recentTerms
+    .map((term) => term.term_value ?? term.name ?? `${term.season ?? ""} ${term.year ?? ""}`.trim())
+    .filter(Boolean)
+    .join(" and ");
 
   return {
     source: {
@@ -294,6 +305,7 @@ export async function fetchSupabaseCatalogDataset() {
       longName: "Computer Science BA with live Supabase catalog",
       planCode: "COMPSCI-BA-SUPABASE-LIVE",
     },
+    datasetStatusMessage: `Pulled ${coursesForFrontend.length} courses from Supabase across ${recentTerms.length} term${recentTerms.length === 1 ? "" : "s"}${termSummary ? ` (${termSummary})` : ""}.`,
     planCourseCodes: mockHunterCsPlaceholder.planCourseCodes.filter((code) => availableCodes.has(code)),
     electiveOptions: mockHunterCsPlaceholder.electiveOptions.filter((code) => availableCodes.has(code)),
     courses: coursesForFrontend,

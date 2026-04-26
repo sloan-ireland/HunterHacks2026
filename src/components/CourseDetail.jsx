@@ -79,12 +79,14 @@ export default function CourseDetail({ course, status, inPlan }) {
           {course.corequisiteText ? <p className="detail-note">{course.corequisiteText}</p> : null}
         </div>
 
-        <div className="detail-callout">
-          <span>{inPlan ? "Planner path" : "Reference course"}</span>
-          <a href={course.sourceUrl} target="_blank" rel="noreferrer">
-            Open catalog source
-          </a>
-        </div>
+        {course.sourceUrl && course.sourceUrl !== "#" ? (
+          <div className="detail-callout">
+            <span>{inPlan ? "Planner path" : "Reference course"}</span>
+            <a href={course.sourceUrl} target="_blank" rel="noreferrer">
+              Open catalog source
+            </a>
+          </div>
+        ) : null}
       </div>
     </aside>
   );
