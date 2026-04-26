@@ -1,6 +1,28 @@
 import { useMemo, useState } from "react";
 import CourseNode from "./CourseNode";
 
+function buildConnectorPath(startX, startY, endX, endY) {
+  const horizontalGap = endX - startX;
+
+  if (Math.abs(endY - startY) < 6) {
+    return `M ${startX} ${startY} L ${endX} ${endY}`;
+  }
+
+  const exitRun = Math.min(48, Math.max(24, horizontalGap * 0.18));
+  const entryRun = Math.min(34, Math.max(18, horizontalGap * 0.12));
+  const turnX = Math.max(startX + exitRun, endX - entryRun - 18);
+  const bendDirection = endY > startY ? 1 : -1;
+
+  return [
+    `M ${startX} ${startY}`,
+    `L ${turnX} ${startY}`,
+    `Q ${turnX + 12} ${startY} ${turnX + 12} ${startY + bendDirection * 12}`,
+    `L ${turnX + 12} ${endY - bendDirection * 12}`,
+    `Q ${turnX + 12} ${endY} ${turnX + 24} ${endY}`,
+    `L ${endX} ${endY}`,
+  ].join(" ");
+}
+
 function GraphEdge({ edge, nodeByCode }) {
   const source = nodeByCode[edge.source];
   const target = nodeByCode[edge.target];
@@ -13,13 +35,14 @@ function GraphEdge({ edge, nodeByCode }) {
   const startY = source.y + source.height / 2;
   const endX = target.x;
   const endY = target.y + target.height / 2;
-  const midX = startX + (endX - startX) / 2;
+  const path = buildConnectorPath(startX, startY, endX, endY);
 
   return (
-    <path
-      d={`M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`}
-      className="graph-edge"
-    />
+    <g className="graph-edge-group">
+      <path d={path} className="graph-edge graph-edge-underlay" />
+      <path d={path} className="graph-edge graph-edge-foreground" />
+      <circle cx={endX} cy={endY} r="2.5" className="graph-edge-terminal" />
+    </g>
   );
 }
 

@@ -152,11 +152,16 @@ export default function App() {
       return;
     }
 
+    const nextRecommendedCode =
+      catalog.planCourseCodes.find((code) => !scenario.completed.includes(code)) ??
+      scenario.completed[scenario.completed.length - 1] ??
+      catalog.planCourseCodes[0];
+
     setCompletedCodes([...scenario.completed]);
     setIncludeSummer(false);
     setMaxCredits(15);
     setSelectedElectiveCodes([]);
-    setSelectedCourseCode(catalog.planCourseCodes[0]);
+    setSelectedCourseCode(nextRecommendedCode);
     setActiveScenarioKey(key);
   }
 
