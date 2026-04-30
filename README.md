@@ -1,9 +1,10 @@
 # CUNYPath Frontend
 
-Standalone frontend-only app for CUNYPath.
+Standalone CUNYPath frontend for the Hunter CS planner.
 
-This version is intentionally separate from the scraper workspace and uses placeholder datasets so
-the product UI can evolve independently from the data pipeline.
+This app is separate from the scraper workspace and is now centered on the live Supabase-backed
+catalog, with local fallback metadata used only to keep roadmap grouping and prerequisite logic
+stable when the live catalog is incomplete.
 
 ## Run
 
@@ -18,6 +19,15 @@ npm run dev
 npm run build
 ```
 
-## Datasets
+## Project Structure
 
-Use the `Dataset` dropdown in the app to switch between placeholder planning datasets.
+- `src/` - React app source
+- `src/data/supabaseCatalog.js` - live catalog loader
+- `src/lib/` - catalog shaping, planner logic, Supabase client
+- `src/components/` - planner UI
+- `supabase/` - SQL for user planner state
+
+## Notes
+
+- `node_modules/` is intentionally kept so the app can run immediately.
+- `dist/` is disposable build output and can always be regenerated with `npm run build`.

@@ -2,7 +2,7 @@
   "name": "cunypath-frontend",
   "private": true,
   "version": "1.0.0",
-  "description": "Standalone CUNYPath frontend with placeholder datasets.",
+  "description": "Standalone CUNYPath frontend with live Supabase catalog support.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

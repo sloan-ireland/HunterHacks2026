@@ -191,12 +191,29 @@ export default function DependencyGraph({
   }, [viewportWidth, contentWidth]);
 
   const effectiveZoom = Math.min(1.45, Math.max(0.7, fitZoom * zoom));
+  const statusSummary = useMemo(() => {
+    return filteredNodes.reduce(
+      (accumulator, node) => {
+        const status = statuses[node.code];
+        if (status && accumulator[status] !== undefined) {
+          accumulator[status] += 1;
+        }
+        return accumulator;
+      },
+      { completed: 0, available: 0, next: 0, locked: 0 },
+    );
+  }, [filteredNodes, statuses]);
+  const selectedNode = selectedCode ? filteredNodeByCode[selectedCode] ?? null : null;
 
   return (
     <section className="panel graph-panel map-panel">
       <div className="map-toolbar">
         <div className="map-toolbar-title">
+          <p className="eyebrow">Degree Map</p>
           <h2>Degree Map</h2>
+          <p className="map-subcopy">
+            Follow the prerequisite flow, switch the filter when you want a cleaner view, and tap a course to inspect what unlocks next.
+          </p>
         </div>
 
         <div className="map-toolbar-right">
@@ -246,6 +263,25 @@ export default function DependencyGraph({
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="map-summary-row">
+        <div className="map-summary-card">
+          <span>Visible Courses</span>
+          <strong>{filteredNodes.length}</strong>
+        </div>
+        <div className="map-summary-card">
+          <span>Available Now</span>
+          <strong>{statusSummary.available}</strong>
+        </div>
+        <div className="map-summary-card">
+          <span>Available Next</span>
+          <strong>{statusSummary.next}</strong>
+        </div>
+        <div className="map-summary-card">
+          <span>Selected</span>
+          <strong>{selectedNode?.code ?? "Choose one"}</strong>
         </div>
       </div>
 

@@ -28,6 +28,7 @@ export default function CompletedCourses({
 }) {
   const [activeFilter, setActiveFilter] = useState("all");
   const [query, setQuery] = useState("");
+  const [collapsed, setCollapsed] = useState(false);
   const completedSet = new Set(completedCodes);
   const trackedSet = new Set(planCourseCodes);
 
@@ -74,13 +75,23 @@ export default function CompletedCourses({
   }, [activeFilter, allCourses, completedSet, query]);
 
   return (
-    <section className="panel checklist-panel rail-panel progress-panel-expanded">
+    <section className={`panel checklist-panel rail-panel progress-panel-expanded ${collapsed ? "is-collapsed" : ""}`}>
       <div className="panel-header rail-header">
         <div>
           <p className="eyebrow">My Progress</p>
           <h2>Degree progress</h2>
         </div>
-        <span className="panel-chip">{progressPercent}%</span>
+        <div className="progress-header-actions">
+          <span className="panel-chip">{progressPercent}%</span>
+          <button
+            type="button"
+            className="collapse-toggle"
+            aria-expanded={!collapsed}
+            onClick={() => setCollapsed((current) => !current)}
+          >
+            {collapsed ? "Expand" : "Collapse"}
+          </button>
+        </div>
       </div>
 
       <div className="progress-hero">
@@ -95,73 +106,82 @@ export default function CompletedCourses({
         </span>
       </div>
 
-      <div className="completed-header-row">
-        <strong>Roadmap courses</strong>
-        <span>{trackedCourseCount}</span>
-      </div>
+      {!collapsed ? (
+        <>
+          <div className="completed-header-row">
+            <strong>Roadmap courses</strong>
+            <span>{trackedCourseCount}</span>
+          </div>
 
-      <div className="progress-filter-tabs" role="tablist" aria-label="Course filters">
-        {FILTER_OPTIONS.map((option) => (
-          <button
-            key={option.key}
-            type="button"
-            className={activeFilter === option.key ? "is-active" : ""}
-            onClick={() => setActiveFilter(option.key)}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
-
-      <label className="progress-search-shell">
-        <span className="progress-search-label">Search courses</span>
-        <input
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search by code or title"
-        />
-      </label>
-
-      <div className="completed-header-row completed-header-row-subtle">
-        <strong>Showing</strong>
-        <span>{visibleCourses.length}</span>
-      </div>
-
-      <div className="completed-course-list completed-course-list-tall">
-        {visibleCourses.map((course) => {
-          const checked = completedSet.has(course.code);
-          const inputId = `course-${course.code.replace(/\s+/g, "-").toLowerCase()}`;
-          return (
-            <label
-              key={course.code}
-              className={`progress-course-row ${checked ? "is-completed" : ""}`}
-              htmlFor={inputId}
-            >
-              <input
-                id={inputId}
-                type="checkbox"
-                checked={checked}
-                aria-label={`${course.code} ${course.name}`}
-                onChange={(event) => onSetCourseCompleted(course.code, event.target.checked)}
-              />
+          <div className="progress-filter-tabs" role="tablist" aria-label="Course filters">
+            {FILTER_OPTIONS.map((option) => (
               <button
+                key={option.key}
                 type="button"
-                className="progress-course-copy"
-                onClick={() => onSelectCourse(course.code)}
+                className={activeFilter === option.key ? "is-active" : ""}
+                onClick={() => setActiveFilter(option.key)}
               >
-                <div className="progress-course-topline">
-                  <strong>{course.code}</strong>
-                  <span>{course.credits} cr</span>
-                </div>
-                <p>{course.name}</p>
-                <small>{course.groupLabel}</small>
+                {option.label}
               </button>
-              <span className="course-badge">{courseMeta(course, completedSet, trackedSet)}</span>
-            </label>
-          );
-        })}
-      </div>
+            ))}
+          </div>
+
+          <label className="progress-search-shell">
+            <span className="progress-search-label">Search courses</span>
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search by code or title"
+            />
+          </label>
+
+          <div className="completed-header-row completed-header-row-subtle">
+            <strong>Showing</strong>
+            <span>{visibleCourses.length}</span>
+          </div>
+
+          <div className="completed-course-list completed-course-list-tall">
+            {visibleCourses.map((course) => {
+              const checked = completedSet.has(course.code);
+              const inputId = `course-${course.code.replace(/\s+/g, "-").toLowerCase()}`;
+              return (
+                <label
+                  key={course.code}
+                  className={`progress-course-row ${checked ? "is-completed" : ""}`}
+                  htmlFor={inputId}
+                >
+                  <input
+                    id={inputId}
+                    type="checkbox"
+                    checked={checked}
+                    aria-label={`${course.code} ${course.name}`}
+                    onChange={(event) => onSetCourseCompleted(course.code, event.target.checked)}
+                  />
+                  <button
+                    type="button"
+                    className="progress-course-copy"
+                    onClick={() => onSelectCourse(course.code)}
+                  >
+                    <div className="progress-course-topline">
+                      <strong>{course.code}</strong>
+                      <span>{course.credits} cr</span>
+                    </div>
+                    <p>{course.name}</p>
+                    <small>{course.groupLabel}</small>
+                  </button>
+                  <span className="course-badge">{courseMeta(course, completedSet, trackedSet)}</span>
+                </label>
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        <div className="progress-collapsed-note">
+          <span>Course checklist hidden.</span>
+          <strong>{visibleCourses.length} courses ready to review</strong>
+        </div>
+      )}
     </section>
   );
 }

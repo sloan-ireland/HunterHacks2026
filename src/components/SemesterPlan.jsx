@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { hasSatisfiedPrerequisites } from "../lib/planner";
 
 const TERMS_PER_PAGE = 2;
+const MAX_SUGGESTIONS = 6;
 
 function isCourseOfferedIn(course, season) {
   if (!course?.semestersOffered?.length) {
@@ -64,10 +65,12 @@ export default function SemesterPlan({
   completedCodes,
   maxCredits,
   onSelectCourse,
+  onPlanEdit,
 }) {
   const [editableSemesters, setEditableSemesters] = useState([]);
   const [additionSelections, setAdditionSelections] = useState({});
   const [additionQueries, setAdditionQueries] = useState({});
+  const [suggestionsOpen, setSuggestionsOpen] = useState({});
   const [plannerAlert, setPlannerAlert] = useState("");
   const [pageStart, setPageStart] = useState(0);
   const planSeed = useMemo(() => createPlanSeed(plan), [plan]);
@@ -81,9 +84,11 @@ export default function SemesterPlan({
     setEditableSemesters(nextSemesters);
     setAdditionSelections({});
     setAdditionQueries({});
+    setSuggestionsOpen({});
     setPlannerAlert("");
     setPageStart(0);
-  }, [planSeed]);
+    onPlanEdit?.(null);
+  }, [onPlanEdit, planSeed]);
 
   const plannedCodeSet = useMemo(
     () => new Set(editableSemesters.flatMap((semester) => semester.courses.map((course) => course.code))),
@@ -164,8 +169,8 @@ export default function SemesterPlan({
     }
 
     const course = courseMap[selectedCode];
-    setEditableSemesters((current) =>
-      current.map((semester) => {
+    setEditableSemesters((current) => {
+      const nextSemesters = current.map((semester) => {
         if (semester.id !== semesterId) {
           return semester;
         }
@@ -177,16 +182,19 @@ export default function SemesterPlan({
           credits: nextCourses.reduce((sum, item) => sum + item.credits, 0),
           isIdle: nextCourses.length === 0,
         };
-      }),
-    );
+      });
+      onPlanEdit?.(nextSemesters);
+      return nextSemesters;
+    });
     setAdditionSelections((current) => ({ ...current, [semesterId]: "" }));
     setAdditionQueries((current) => ({ ...current, [semesterId]: "" }));
+    setSuggestionsOpen((current) => ({ ...current, [semesterId]: false }));
     setPlannerAlert("");
   }
 
   function handleRemoveCourse(semesterId, courseCode) {
-    setEditableSemesters((current) =>
-      current.map((semester) => {
+    setEditableSemesters((current) => {
+      const nextSemesters = current.map((semester) => {
         if (semester.id !== semesterId) {
           return semester;
         }
@@ -198,8 +206,32 @@ export default function SemesterPlan({
           credits: nextCourses.reduce((sum, item) => sum + item.credits, 0),
           isIdle: nextCourses.length === 0,
         };
-      }),
-    );
+      });
+      onPlanEdit?.(nextSemesters);
+      return nextSemesters;
+    });
+    setPlannerAlert("");
+  }
+
+  function handleQueryChange(semesterId, value, filteredAddCodes) {
+    const normalizedValue = value.trim().toLowerCase();
+    const exactMatch = filteredAddCodes.find((code) => {
+      const course = courseMap[code];
+      return [code, course?.name].filter(Boolean).some((entry) => entry.toLowerCase() === normalizedValue);
+    });
+
+    setAdditionQueries((current) => ({ ...current, [semesterId]: value }));
+    setAdditionSelections((current) => ({
+      ...current,
+      [semesterId]: exactMatch ?? current[semesterId] ?? "",
+    }));
+    setSuggestionsOpen((current) => ({ ...current, [semesterId]: Boolean(value.trim()) }));
+  }
+
+  function handleSuggestionPick(semesterId, code) {
+    setAdditionSelections((current) => ({ ...current, [semesterId]: code }));
+    setAdditionQueries((current) => ({ ...current, [semesterId]: `${code} - ${courseMap[code]?.name ?? ""}` }));
+    setSuggestionsOpen((current) => ({ ...current, [semesterId]: false }));
     setPlannerAlert("");
   }
 
@@ -253,6 +285,7 @@ export default function SemesterPlan({
               .filter(Boolean)
               .some((value) => value.toLowerCase().includes(query));
           });
+          const visibleSuggestions = filteredAddCodes.slice(0, MAX_SUGGESTIONS);
 
           return (
             <article key={semester.id} className="graduation-card graduation-card-editable">
@@ -296,32 +329,47 @@ export default function SemesterPlan({
                     type="search"
                     value={additionQueries[semester.id] ?? ""}
                     onChange={(event) =>
-                      setAdditionQueries((current) => ({
+                      handleQueryChange(semester.id, event.target.value, filteredAddCodes)
+                    }
+                    onFocus={() =>
+                      setSuggestionsOpen((current) => ({
                         ...current,
-                        [semester.id]: event.target.value,
+                        [semester.id]: Boolean((additionQueries[semester.id] ?? "").trim()),
                       }))
                     }
                     placeholder="Search by code or title"
+                    autoComplete="off"
                   />
                 </label>
 
-                <div className="semester-add-row">
-                  <select
-                    value={additionSelections[semester.id] ?? ""}
-                    onChange={(event) =>
-                      setAdditionSelections((current) => ({
-                        ...current,
-                        [semester.id]: event.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">Add a course...</option>
-                    {filteredAddCodes.map((code) => (
-                      <option key={code} value={code}>
-                        {code} - {courseMap[code]?.name}
-                      </option>
+                {suggestionsOpen[semester.id] && visibleSuggestions.length ? (
+                  <div className="semester-suggestion-list" role="listbox" aria-label={`Suggestions for ${semester.label}`}>
+                    {visibleSuggestions.map((code) => (
+                      <button
+                        key={`${semester.id}-${code}`}
+                        type="button"
+                        className={`semester-suggestion-item ${
+                          additionSelections[semester.id] === code ? "is-active" : ""
+                        }`}
+                        onClick={() => handleSuggestionPick(semester.id, code)}
+                      >
+                        <strong>{code}</strong>
+                        <span>{courseMap[code]?.name}</span>
+                      </button>
                     ))}
-                  </select>
+                  </div>
+                ) : null}
+
+                <div className="semester-add-row">
+                  <div className="semester-add-selection">
+                    {additionSelections[semester.id] ? (
+                      <span>
+                        Selected: {additionSelections[semester.id]} - {courseMap[additionSelections[semester.id]]?.name}
+                      </span>
+                    ) : (
+                      <span>Pick a course from the suggestions above.</span>
+                    )}
+                  </div>
                   <button type="button" className="semester-add-button" onClick={() => handleAddCourse(semester.id, semesterIndex)}>
                     Add
                   </button>

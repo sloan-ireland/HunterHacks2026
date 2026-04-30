@@ -7,6 +7,7 @@ const SUPABASE_ANON_KEY =
 const placeholderMetadataByCode = Object.fromEntries(
   mockHunterCsPlaceholder.courses.map((course) => [course.code, course]),
 );
+const placeholderElectiveCodes = new Set(mockHunterCsPlaceholder.electiveOptions);
 
 const seasonRank = {
   winter: 0,
@@ -14,8 +15,6 @@ const seasonRank = {
   summer: 2,
   fall: 3,
 };
-
-const SUPPORT_SUBJECTS = new Set(["MATH", "STAT"]);
 
 function normalizeCode(code) {
   if (!code) {
@@ -38,37 +37,6 @@ function extractCodes(text) {
   }
 
   return [...new Set((String(text).match(/[A-Z]{2,}\s?\d{5}/g) ?? []).map(normalizeCode))];
-}
-
-function getCourseCode(row) {
-  return normalizeCode(row.code ?? `${row.subject} ${row.course_number}`);
-}
-
-function getSubjectFromCode(code) {
-  return code.split(" ")[0] ?? "";
-}
-
-function getReferencedSupportCodes(rows) {
-  const supportCodes = new Set();
-
-  rows
-    .filter((row) => getCourseCode(row).startsWith("CSCI "))
-    .forEach((row) => {
-      [
-        row.prerequisites,
-        row.corequisites,
-        row.pre_or_corequisites,
-        row.enrollment_requirements,
-      ].forEach((text) => {
-        extractCodes(text).forEach((code) => {
-          if (SUPPORT_SUBJECTS.has(getSubjectFromCode(code))) {
-            supportCodes.add(code);
-          }
-        });
-      });
-    });
-
-  return supportCodes;
 }
 
 function normalizeSeason(value) {
@@ -198,7 +166,6 @@ export async function fetchSupabaseCatalogDataset() {
         "prerequisites",
         "corequisites",
         "pre_or_corequisites",
-        "enrollment_requirements",
         "descriptions",
       ].join(","),
     ),
@@ -229,8 +196,8 @@ export async function fetchSupabaseCatalogDataset() {
   const recentTermIds = new Set(recentTerms.map((term) => term.term_id));
   const termById = Object.fromEntries(terms.map((row) => [row.term_id, row]));
   const subjectById = Object.fromEntries(subjects.map((row) => [row.subject_id, row]));
-  const scopedSections = sections.filter((row) => recentTermIds.has(row.term_id));
-  const sectionsByCourseId = scopedSections.reduce((accumulator, row) => {
+  const recentSections = sections.filter((row) => recentTermIds.has(row.term_id));
+  const sectionsByCourseId = (recentSections.length ? recentSections : sections).reduce((accumulator, row) => {
     accumulator[row.course_id] ??= [];
     accumulator[row.course_id].push(row);
     return accumulator;
@@ -245,32 +212,17 @@ export async function fetchSupabaseCatalogDataset() {
     return normalized === "ugrd" || normalized === "undergraduate";
   };
 
-  const scopedCourses = courses.filter((row) => recentTermIds.has(row.term_id));
-  const filteredCourses = scopedCourses.filter((row) => {
+  const filteredCourses = courses.filter((row) => {
     const matchesInstitution = hunterInstitution ? row.institution_id === hunterInstitution.institution_id : true;
-    return matchesInstitution && isUndergraduateCareer(row.career);
+    const matchesRecentTerm = recentTermIds.size ? recentTermIds.has(row.term_id) : true;
+    return matchesInstitution && matchesRecentTerm && isUndergraduateCareer(row.career);
   });
   const visibleCourses = filteredCourses.length
     ? filteredCourses
-    : scopedCourses.filter((row) => isUndergraduateCareer(row.career));
-  const referencedSupportCodes = getReferencedSupportCodes(visibleCourses);
-  const frontendVisibleCourses = visibleCourses.filter((row) => {
-    const code = getCourseCode(row);
-    const subject = getSubjectFromCode(code);
+    : courses.filter((row) => isUndergraduateCareer(row.career));
 
-    if (code.startsWith("CSCI ")) {
-      return true;
-    }
-
-    if (SUPPORT_SUBJECTS.has(subject)) {
-      return referencedSupportCodes.has(code);
-    }
-
-    return mockHunterCsPlaceholder.planCourseCodes.includes(code);
-  });
-
-  const groupedByCode = frontendVisibleCourses.reduce((accumulator, row) => {
-    const code = getCourseCode(row);
+  const groupedByCode = visibleCourses.reduce((accumulator, row) => {
+    const code = normalizeCode(row.code ?? `${row.subject} ${row.course_number}`);
     if (!code) {
       return accumulator;
     }
@@ -280,7 +232,7 @@ export async function fetchSupabaseCatalogDataset() {
     return accumulator;
   }, {});
 
-  const coursesForFrontend = Object.entries(groupedByCode)
+  const preliminaryCourses = Object.entries(groupedByCode)
     .map(([code, courseRows]) => {
       const metadata = placeholderMetadataByCode[code] ?? {};
       const sortedRows = [...courseRows].sort((left, right) => compareTermRows(left, right, termById));
@@ -301,27 +253,28 @@ export async function fetchSupabaseCatalogDataset() {
       const sectionDescription = representativeSections.find((section) => section.description)?.description;
       const credits =
         Number(representative.max_units ?? representative.min_units ?? metadata.credits ?? 0) || metadata.credits || 0;
+      const category =
+        metadata.category ??
+        (subject === "MATH" || subject === "STAT"
+          ? "math"
+          : placeholderElectiveCodes.has(code)
+            ? "elective"
+            : "unassigned");
 
       return {
         code,
         name: representative.title ?? metadata.name ?? code,
         credits,
-        prerequisites: metadata.prerequisites?.length ? metadata.prerequisites : parsedPrereqs,
+        prerequisites: parsedPrereqs.length ? parsedPrereqs : metadata.prerequisites ?? [],
         prerequisiteGroups:
-          metadata.prerequisiteGroups?.length
-            ? metadata.prerequisiteGroups
-            : parsedPrereqs.map((prereqCode) => [prereqCode]),
-        corequisites: metadata.corequisites?.length ? metadata.corequisites : parsedCoreqs,
+          parsedPrereqs.length
+            ? parsedPrereqs.map((prereqCode) => [prereqCode])
+            : metadata.prerequisiteGroups ?? [],
+        corequisites: parsedCoreqs.length ? parsedCoreqs : metadata.corequisites ?? [],
         prerequisiteText: representative.prerequisites ?? metadata.prerequisiteText ?? "",
         corequisiteText: representative.corequisites ?? metadata.corequisiteText ?? "",
         semestersOffered: getSemestersOffered(sortedRows, termById, metadata.semestersOffered),
-        category:
-          metadata.category ??
-          (subject === "MATH" || subject === "STAT"
-            ? "math"
-            : mockHunterCsPlaceholder.planCourseCodes.includes(code)
-              ? "core"
-              : "elective"),
+        category,
         description:
           normalizeDescription(representative.descriptions) ||
           sectionDescription ||
@@ -335,7 +288,58 @@ export async function fetchSupabaseCatalogDataset() {
     })
     .sort((left, right) => left.code.localeCompare(right.code));
 
+  const preliminaryCourseMap = Object.fromEntries(preliminaryCourses.map((course) => [course.code, course]));
+  const requiredSeedCodes = new Set(
+    mockHunterCsPlaceholder.planCourseCodes.filter((code) => preliminaryCourseMap[code]),
+  );
+
+  function addRequiredPrerequisites(code, trail = new Set()) {
+    if (trail.has(code)) {
+      return;
+    }
+
+    const course = preliminaryCourseMap[code];
+    if (!course) {
+      return;
+    }
+
+    trail.add(code);
+    course.prerequisites.forEach((prerequisiteCode) => {
+      if (!preliminaryCourseMap[prerequisiteCode]) {
+        return;
+      }
+
+      requiredSeedCodes.add(prerequisiteCode);
+      addRequiredPrerequisites(prerequisiteCode, trail);
+    });
+    trail.delete(code);
+  }
+
+  [...requiredSeedCodes].forEach((code) => addRequiredPrerequisites(code));
+
+  const coursesForFrontend = preliminaryCourses.map((course) => ({
+    ...course,
+    category:
+      course.category === "elective"
+        ? "elective"
+        : requiredSeedCodes.has(course.code)
+          ? course.subject === "MATH" || course.subject === "STAT"
+            ? "math"
+            : "core"
+          : "elective",
+  }));
+
   const availableCodes = new Set(coursesForFrontend.map((course) => course.code));
+  const planCourseCodes = coursesForFrontend
+    .filter((course) => course.category !== "elective")
+    .map((course) => course.code);
+  const electiveOptions = coursesForFrontend
+    .filter((course) => course.category === "elective")
+    .map((course) => course.code);
+  const computedRequiredCredits = planCourseCodes.reduce(
+    (sum, code) => sum + (coursesForFrontend.find((course) => course.code === code)?.credits ?? 0),
+    0,
+  );
 
   const termSummary = recentTerms
     .map((term) => term.term_value ?? term.name ?? `${term.season ?? ""} ${term.year ?? ""}`.trim())
@@ -349,14 +353,21 @@ export async function fetchSupabaseCatalogDataset() {
       implementation: "Live Supabase catalog dataset",
       programUrl: mockHunterCsPlaceholder.source.programUrl,
     },
+    planningStartTerm: recentTerms[0]
+      ? {
+          season: normalizeSeason(recentTerms[0].season) || "fall",
+          year: Number(recentTerms[0].year) || new Date().getFullYear(),
+        }
+      : null,
     program: {
       ...mockHunterCsPlaceholder.program,
       longName: "Computer Science BA with live Supabase catalog",
       planCode: "COMPSCI-BA-SUPABASE-LIVE",
+      creditsRequired: Math.max(mockHunterCsPlaceholder.program.creditsRequired, computedRequiredCredits),
     },
     datasetStatusMessage: `Current catalog loaded with ${coursesForFrontend.length} courses across ${recentTerms.length} term${recentTerms.length === 1 ? "" : "s"}${termSummary ? ` (${termSummary})` : ""}.`,
-    planCourseCodes: mockHunterCsPlaceholder.planCourseCodes.filter((code) => availableCodes.has(code)),
-    electiveOptions: mockHunterCsPlaceholder.electiveOptions.filter((code) => availableCodes.has(code)),
+    planCourseCodes: planCourseCodes.filter((code) => availableCodes.has(code)),
+    electiveOptions: electiveOptions.filter((code) => availableCodes.has(code)),
     courses: coursesForFrontend,
   };
 }

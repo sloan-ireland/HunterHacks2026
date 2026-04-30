@@ -54,6 +54,10 @@ button {
   gap: 14px;
 }
 
+.topbar-menu-shell {
+  position: relative;
+}
+
 .topbar-icon-button {
   width: 40px;
   height: 40px;
@@ -66,11 +70,48 @@ button {
   padding: 0 10px;
 }
 
+.topbar-icon-button.is-active {
+  border-color: #8ea9d4;
+  background: #f5f9ff;
+  box-shadow: 0 10px 18px rgba(42, 76, 131, 0.08);
+}
+
 .topbar-icon-button span {
   display: block;
   height: 2px;
   border-radius: 999px;
   background: #24477d;
+}
+
+.topbar-menu-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  width: 220px;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #dce6f5;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 20px 32px rgba(16, 38, 73, 0.12);
+}
+
+.topbar-menu-item {
+  border: 1px solid #d2dcf0;
+  background: #ffffff;
+  color: #1b2f4c;
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.topbar-menu-item:hover {
+  border-color: #8ea9d4;
+  background: #f5f9ff;
+  box-shadow: 0 10px 18px rgba(42, 76, 131, 0.08);
 }
 
 .brand-lockup {
@@ -135,7 +176,7 @@ button {
 
 .workspace-layout {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: 340px minmax(0, 1fr);
   gap: 16px;
   margin-top: 16px;
   align-items: start;
@@ -148,6 +189,10 @@ button {
 }
 
 .planner-workspace {
+  min-width: 0;
+}
+
+.workspace-progress-row {
   min-width: 0;
 }
 
@@ -198,7 +243,7 @@ button {
 
 .map-detail-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 332px;
+  grid-template-columns: minmax(0, 1fr) 308px;
   gap: 16px;
   align-items: start;
 }
@@ -456,8 +501,8 @@ button {
 .toggle-row,
 .credit-control,
 .elective-picker {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   align-items: start;
 }
@@ -498,7 +543,7 @@ button {
 }
 
 .credit-segments {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .scenario-actions {
@@ -506,8 +551,8 @@ button {
 }
 
 .token-list {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -523,6 +568,7 @@ button {
   color: #1b2f4c;
   border-radius: 8px;
   padding: 10px 12px;
+  min-width: 0;
   transition:
     background 140ms ease,
     border-color 140ms ease,
@@ -629,7 +675,8 @@ button {
 }
 
 .map-toolbar {
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
   margin-bottom: 12px;
 }
 
@@ -637,7 +684,15 @@ button {
   font-size: 1.5rem;
 }
 
+.map-subcopy {
+  margin: 6px 0 0;
+  max-width: 560px;
+  color: #607590;
+  line-height: 1.55;
+}
+
 .map-toolbar-right {
+  min-width: 0;
   align-items: center;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -650,10 +705,41 @@ button {
   flex-wrap: wrap;
 }
 
+.map-summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.map-summary-card {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #dce6f5;
+  background: #f8fbff;
+}
+
+.map-summary-card span {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #6b7f9d;
+}
+
+.map-summary-card strong {
+  display: block;
+  margin-top: 6px;
+  color: #122743;
+  font-size: 0.98rem;
+  overflow-wrap: anywhere;
+}
+
 .graph-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  min-width: 0;
   color: #556a88;
 }
 
@@ -665,6 +751,7 @@ button {
   padding: 5px 8px;
   border-radius: 999px;
   background: #f6f9fd;
+  white-space: nowrap;
 }
 
 .legend-dot {
@@ -762,7 +849,9 @@ button {
 }
 
 .map-scroll {
-  overflow: hidden;
+  overflow: auto;
+  max-height: 72vh;
+  -webkit-overflow-scrolling: touch;
   border-radius: 8px;
   border: 1px solid #dce5f3;
   background:
@@ -775,6 +864,7 @@ button {
 .graph-surface {
   position: relative;
   margin: 0 auto;
+  min-width: fit-content;
 }
 
 .graph-stage {
@@ -1094,6 +1184,45 @@ button {
   min-width: 48px;
 }
 
+.elective-page-shell {
+  display: grid;
+  gap: 10px;
+}
+
+.elective-page-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+  color: #617693;
+  font-size: 0.82rem;
+}
+
+.elective-page-header strong {
+  color: #173b72;
+  font-size: 0.88rem;
+}
+
+.elective-page-tabs {
+  display: grid;
+  grid-template-columns: auto repeat(4, minmax(0, 1fr)) auto;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.elective-page-tabs button {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.elective-page-nav:disabled {
+  cursor: default;
+  opacity: 0.45;
+  box-shadow: none;
+}
+
 .graduation-plan-strip {
   display: grid;
   gap: 12px;
@@ -1190,9 +1319,33 @@ button {
   box-shadow: none;
 }
 
-@media (max-width: 1360px) {
+@media (max-width: 1480px) {
+  .workspace-layout {
+    grid-template-columns: 320px minmax(0, 1fr);
+  }
+
   .map-detail-grid {
     grid-template-columns: 1fr;
+  }
+
+  .workspace-summary-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1240px) {
+  .topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar-brand-row,
+  .topbar-actions {
+    justify-content: space-between;
+  }
+
+  .topbar-selects {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1208,10 +1361,46 @@ button {
 
 @media (max-width: 780px) {
   .app-shell {
-    padding: 12px;
+    padding: 10px;
   }
 
-  .topbar,
+  .topbar {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .topbar-brand-row,
+  .topbar-actions {
+    justify-content: space-between;
+  }
+
+  .topbar-selects {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .workspace-summary-row {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar-link {
+    padding: 8px 0;
+  }
+
+  .panel {
+    padding: 14px;
+  }
+
+  .left-rail {
+    order: 2;
+  }
+
+  .planner-workspace {
+    order: 1;
+  }
+
   .panel-header,
   .toggle-row,
   .credit-control,
@@ -1219,22 +1408,84 @@ button {
   .map-toolbar,
   .map-toolbar-right,
   .drawer-header,
-  .drawer-footer,
   .graduation-summary-bar {
     grid-template-columns: 1fr;
     display: grid;
+    gap: 10px;
   }
 
-  .topbar-selects,
+  .map-toolbar-right,
+  .map-toolbar-controls {
+    justify-content: stretch;
+  }
+
+  .filter-menu-shell,
+  .filter-menu-button,
+  .graph-actions-compact {
+    width: 100%;
+  }
+
+  .filter-menu-button {
+    min-width: 0;
+  }
+
+  .filter-menu-popover {
+    left: 0;
+    right: auto;
+    width: min(220px, 100%);
+  }
+
+  .elective-page-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .graph-actions-compact {
+    justify-content: space-between;
+  }
+
   .credit-segments,
   .scenario-actions,
   .detail-grid,
-  .graduation-plan-strip-paged {
+  .graduation-plan-strip-paged,
+  .token-list {
     grid-template-columns: 1fr;
   }
 
   .topbar-select-card {
     min-width: 0;
+  }
+
+  .completed-course-list,
+  .completed-course-list-tall {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .progress-course-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .progress-course-row .course-badge {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .map-scroll {
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .graph-surface {
+    margin: 0;
+    min-width: 100%;
+  }
+
+  .drawer-header h2 {
+    font-size: 1.6rem;
+  }
+
+  .drawer-header h3 {
+    font-size: 1.18rem;
   }
 
   .drawer-header-badges {
@@ -1244,6 +1495,77 @@ button {
   .timeline-toolbar {
     grid-template-columns: 1fr;
     display: grid;
+    gap: 10px;
+  }
+
+  .timeline-pager {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .graduation-summary-bar {
+    align-items: start;
+  }
+
+  .requirement-pill {
+    grid-template-columns: 1fr;
+  }
+
+  .requirement-pill span {
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 560px) {
+  .app-shell {
+    padding: 8px;
+  }
+
+  .topbar {
+    padding: 12px;
+  }
+
+  .brand-lockup {
+    font-size: 1.05rem;
+  }
+
+  .topbar-actions {
+    gap: 14px;
+  }
+
+  .summary-pill {
+    padding: 12px 14px;
+  }
+
+  .scenario-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .credit-segments {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .progress-filter-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .progress-course-row {
+    padding: 10px;
+  }
+
+  .graduation-card {
+    padding: 12px;
+  }
+
+  .profile-modal {
+    padding: 18px 16px;
+  }
+
+  .profile-modal-header {
+    grid-template-columns: 1fr;
+    display: grid;
+    gap: 10px;
   }
 }
 

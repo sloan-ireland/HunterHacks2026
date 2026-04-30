@@ -1,3 +1,7 @@
+import { useMemo, useState } from "react";
+
+const ELECTIVES_PER_PAGE = 5;
+
 export default function WhatIfPanel({
   includeSummer,
   onIncludeSummerChange,
@@ -7,6 +11,22 @@ export default function WhatIfPanel({
   selectedElectiveCodes,
   onToggleElective,
 }) {
+  const [activePage, setActivePage] = useState(0);
+  const electivePages = useMemo(() => {
+    const pages = [];
+
+    for (let index = 0; index < electiveOptions.length; index += ELECTIVES_PER_PAGE) {
+      pages.push(electiveOptions.slice(index, index + ELECTIVES_PER_PAGE));
+    }
+
+    return pages;
+  }, [electiveOptions]);
+
+  const clampedPage = Math.min(activePage, Math.max(electivePages.length - 1, 0));
+  const visibleElectives = electivePages[clampedPage] ?? [];
+  const tabWindowStart = Math.max(0, Math.min(clampedPage - 1, Math.max(electivePages.length - 4, 0)));
+  const visiblePageTabs = electivePages.slice(tabWindowStart, tabWindowStart + 4);
+
   return (
     <section className="panel what-if-panel">
       <div className="panel-header">
@@ -54,8 +74,54 @@ export default function WhatIfPanel({
             <small>Electives appear in their own map filter and can be pulled into the graduation plan.</small>
           </div>
 
+          {electivePages.length > 1 ? (
+            <div className="elective-page-shell">
+              <div className="elective-page-header">
+                <strong>Elective page {clampedPage + 1}</strong>
+                <span>
+                  {visibleElectives.length} of {electiveOptions.length} visible
+                </span>
+              </div>
+              <div className="elective-page-tabs" role="tablist" aria-label="Elective pages">
+                <button
+                  type="button"
+                  className="elective-page-nav"
+                  onClick={() => setActivePage((current) => Math.max(current - 1, 0))}
+                  disabled={clampedPage === 0}
+                >
+                  Prev
+                </button>
+                {visiblePageTabs.map((page, index) => {
+                  const pageIndex = tabWindowStart + index;
+                  return (
+                    <button
+                      key={`elective-page-${pageIndex}`}
+                      type="button"
+                      className={clampedPage === pageIndex ? "is-active" : ""}
+                      onClick={() => setActivePage(pageIndex)}
+                    >
+                      {page[0]?.code?.split(" ")[1] ?? pageIndex * ELECTIVES_PER_PAGE + 1}
+                      {" - "}
+                      {page.at(-1)?.code?.split(" ")[1] ?? (pageIndex + 1) * ELECTIVES_PER_PAGE}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  className="elective-page-nav"
+                  onClick={() =>
+                    setActivePage((current) => Math.min(current + 1, Math.max(electivePages.length - 1, 0)))
+                  }
+                  disabled={clampedPage >= electivePages.length - 1}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          ) : null}
+
           <div className="token-list">
-            {electiveOptions.map((course) => {
+            {visibleElectives.map((course) => {
               const active = selectedElectiveCodes.includes(course.code);
               return (
                 <button

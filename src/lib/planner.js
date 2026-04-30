@@ -47,7 +47,14 @@ function createTermLabel(term) {
   return `${TERM_LABELS[term.season]} ${term.year}`;
 }
 
-function getStartingTerm(includeSummer) {
+function getStartingTerm(includeSummer, preferredTerm) {
+  if (preferredTerm?.season && preferredTerm?.year) {
+    return {
+      season: preferredTerm.season,
+      year: Number(preferredTerm.year),
+    };
+  }
+
   const now = new Date();
   const month = now.getMonth() + 1;
   const year = now.getFullYear();
@@ -141,8 +148,9 @@ export function getCourseStatuses(courses, completedCodes) {
       return;
     }
 
-    const nextReady = course.prerequisites.every(
-      (code) => completedSet.has(code) || availableNow.has(code),
+    const nextReady = hasSatisfiedPrerequisites(
+      course,
+      new Set([...completedSet, ...availableNow]),
     );
 
     statuses[course.code] = nextReady ? "next" : "locked";
@@ -262,6 +270,7 @@ export function generateSemesterPlan({
   includeSummer = false,
   maxCredits = 15,
   targetSemesterCount = 6,
+  startingTerm = null,
 }) {
   const descendantCounts = getDescendantCounts(courses, courseMap);
   const requiredCodes = unique([...planCourseCodes, ...selectedElectiveCodes]).filter(
@@ -271,14 +280,11 @@ export function generateSemesterPlan({
   const completedSet = new Set(completedCodes);
   const remainingCodes = new Set(requiredCodes.filter((code) => !completedSet.has(code)));
   const semesters = [];
-  let cursor = getStartingTerm(includeSummer);
-  const maxGeneratedTerms = Math.max(targetSemesterCount, 20);
+  const visibleSemesterCount = Math.max(1, targetSemesterCount);
+  let cursor = getStartingTerm(includeSummer, startingTerm);
+  const maxGeneratedTerms = 24;
 
-  for (
-    let termIndex = 0;
-    termIndex < maxGeneratedTerms && (termIndex < targetSemesterCount || remainingCodes.size > 0);
-    termIndex += 1
-  ) {
+  for (let termIndex = 0; termIndex < maxGeneratedTerms && remainingCodes.size > 0; termIndex += 1) {
     const availableCourses = [...remainingCodes]
       .map((code) => courseMap[code])
       .filter((course) => hasSatisfiedPrerequisites(course, completedSet))
@@ -347,12 +353,16 @@ export function generateSemesterPlan({
     0,
   );
 
+  const visibleSemesters = semesters.slice(0, visibleSemesterCount);
+  const overflowCodes = semesters
+    .slice(visibleSemesterCount)
+    .flatMap((semester) => semester.courses.map((course) => course.code));
   const projectedGraduation = semesters.filter((semester) => semester.courses.length).at(-1);
 
   return {
-    semesters,
+    semesters: visibleSemesters,
     projectedGraduation: projectedGraduation?.label ?? "Complete",
-    remainingCourses: [...remainingCodes],
+    remainingCourses: [...new Set([...overflowCodes, ...remainingCodes])],
     totalRemainingCredits,
   };
 }
