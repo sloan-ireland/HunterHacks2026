@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AuthPanel from "./components/AuthPanel";
 import CollegeMajorSelector from "./components/CollegeMajorSelector";
 import CompletedCourses from "./components/CompletedCourses";
@@ -220,6 +220,7 @@ export default function App() {
     message: "",
   });
   const [profileOpen, setProfileOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [authUser, setAuthUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState("");
@@ -227,6 +228,12 @@ export default function App() {
   const [pendingSyncChoice, setPendingSyncChoice] = useState(null);
   const [saveStatus, setSaveStatus] = useState("Local only");
   const [saveError, setSaveError] = useState("");
+  const setupRef = useRef(null);
+  const controlsRef = useRef(null);
+  const progressRef = useRef(null);
+  const degreeMapRef = useRef(null);
+  const snapshotsRef = useRef(null);
+  const timelineRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -289,6 +296,7 @@ export default function App() {
     savedState?.selectedCourseCode ?? catalog.planCourseCodes[0] ?? null,
   );
   const [activeScenarioKey, setActiveScenarioKey] = useState(savedState?.activeScenarioKey ?? null);
+  const [editedSemesters, setEditedSemesters] = useState(null);
   const [timelineTermCount, setTimelineTermCount] = useState(
     savedState?.timelineTermCount ??
       getTimelineCountForScenario(savedState?.activeScenarioKey),
@@ -513,10 +521,12 @@ export default function App() {
         includeSummer,
         maxCredits,
         targetSemesterCount: timelineTermCount,
+        startingTerm: catalog.planningStartTerm,
       }),
     [
       catalog.courses,
       catalog.courseMap,
+      catalog.planningStartTerm,
       catalog.planCourseCodes,
       completedCodes,
       selectedElectiveCodes,
@@ -525,6 +535,26 @@ export default function App() {
       timelineTermCount,
     ],
   );
+
+  const planSeed = useMemo(
+    () =>
+      JSON.stringify(
+        plan.semesters.map((semester) => ({
+          id: semester.id,
+          credits: semester.credits,
+          codes: semester.courses.map((course) => course.code),
+        })),
+      ),
+    [plan.semesters],
+  );
+
+  useEffect(() => {
+    setEditedSemesters(null);
+  }, [planSeed]);
+
+  const syncedSemesters = editedSemesters ?? plan.semesters;
+  const syncedProjectedGraduation =
+    syncedSemesters.filter((semester) => semester.courses.length).at(-1)?.label ?? plan.projectedGraduation;
 
   const trackedCredits = useMemo(
     () =>
@@ -545,6 +575,19 @@ export default function App() {
   );
 
   const selectedCourse = selectedCourseCode ? catalog.courseMap[selectedCourseCode] ?? null : null;
+  const sectionLinks = [
+    { key: "setup", label: "Setup", ref: setupRef },
+    { key: "controls", label: "Plan Controls", ref: controlsRef },
+    { key: "progress", label: "My Progress", ref: progressRef },
+    { key: "map", label: "Degree Map", ref: degreeMapRef },
+    { key: "snapshots", label: "Snapshots", ref: snapshotsRef },
+    { key: "timeline", label: "Semester Timeline", ref: timelineRef },
+  ];
+
+  function jumpToSection(targetRef) {
+    targetRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setMenuOpen(false);
+  }
 
   function setCourseCompleted(code, nextChecked) {
     setCompletedCodes((current) => {
@@ -657,11 +700,33 @@ export default function App() {
     <div className="app-shell app-shell-immersive">
       <header className="topbar">
         <div className="topbar-brand-row">
-          <button type="button" className="topbar-icon-button" aria-label="Open navigation">
-            <span />
-            <span />
-            <span />
-          </button>
+          <div className="topbar-menu-shell">
+            <button
+              type="button"
+              className={`topbar-icon-button ${menuOpen ? "is-active" : ""}`}
+              aria-label="Open section menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((current) => !current)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+            {menuOpen ? (
+              <div className="topbar-menu-popover" role="menu" aria-label="Jump to section">
+                {sectionLinks.map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    className="topbar-menu-item"
+                    onClick={() => jumpToSection(item.ref)}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
           <div className="brand-lockup">
             <strong className="brand-cuny">CUNY</strong>
             <strong className="brand-path">Path</strong>
@@ -693,34 +758,26 @@ export default function App() {
 
       <main className="workspace-layout">
         <aside className="left-rail">
-          <CollegeMajorSelector
-            catalogLabel={CURRENT_DATASET.label}
-            college={catalog.source.college}
-            major={catalog.source.major}
-            datasetStatus={datasetLoadState}
-          />
+          <div ref={setupRef}>
+            <CollegeMajorSelector
+              catalogLabel={CURRENT_DATASET.label}
+              college={catalog.source.college}
+              major={catalog.source.major}
+              datasetStatus={datasetLoadState}
+            />
+          </div>
 
-          <WhatIfPanel
-            includeSummer={includeSummer}
-            onIncludeSummerChange={setIncludeSummer}
-            maxCredits={maxCredits}
-            onMaxCreditsChange={setMaxCredits}
-            electiveOptions={catalog.electiveOptions.map((code) => catalog.courseMap[code]).filter(Boolean)}
-            selectedElectiveCodes={selectedElectiveCodes}
-            onToggleElective={toggleElective}
-          />
-
-          <CompletedCourses
-            groups={catalog.groupedCourses}
-            completedCodes={completedCodes}
-            onSetCourseCompleted={setCourseCompleted}
-            trackedCredits={trackedCredits}
-            trackedCourseCount={roadmapCourseCodes.length}
-            planCourseCodes={roadmapCourseCodes}
-            degreeCreditsRequired={totalCreditsRequired}
-            progressPercent={progressPercent}
-            onSelectCourse={setSelectedCourseCode}
-          />
+          <div ref={controlsRef}>
+            <WhatIfPanel
+              includeSummer={includeSummer}
+              onIncludeSummerChange={setIncludeSummer}
+              maxCredits={maxCredits}
+              onMaxCreditsChange={setMaxCredits}
+              electiveOptions={catalog.electiveOptions.map((code) => catalog.courseMap[code]).filter(Boolean)}
+              selectedElectiveCodes={selectedElectiveCodes}
+              onToggleElective={toggleElective}
+            />
+          </div>
         </aside>
 
         <section className="planner-workspace">
@@ -739,11 +796,25 @@ export default function App() {
             </div>
             <div className="summary-pill summary-pill-emphasis">
               <span>Projected graduation</span>
-              <strong>{plan.projectedGraduation}</strong>
+              <strong>{syncedProjectedGraduation}</strong>
             </div>
           </div>
 
-          <div className="map-detail-grid">
+          <div ref={progressRef} className="workspace-progress-row">
+            <CompletedCourses
+              groups={catalog.groupedCourses}
+              completedCodes={completedCodes}
+              onSetCourseCompleted={setCourseCompleted}
+              trackedCredits={trackedCredits}
+              trackedCourseCount={roadmapCourseCodes.length}
+              planCourseCodes={roadmapCourseCodes}
+              degreeCreditsRequired={totalCreditsRequired}
+              progressPercent={progressPercent}
+              onSelectCourse={setSelectedCourseCode}
+            />
+          </div>
+
+          <div className="map-detail-grid" ref={degreeMapRef}>
             <DependencyGraph
               graph={graph}
               statuses={statuses}
@@ -760,13 +831,13 @@ export default function App() {
             />
           </div>
 
-          <section className="panel scenario-panel scenario-panel-inline">
+          <section className="panel scenario-panel scenario-panel-inline" ref={snapshotsRef}>
             <div className="panel-header">
               <div>
                 <p className="eyebrow">Snapshots</p>
                 <h2>Jump to a starting point</h2>
               </div>
-              <span className="panel-chip">Timeline: {plan.semesters.length} terms</span>
+              <span className="panel-chip">Timeline: {syncedSemesters.length} terms</span>
             </div>
 
             <div className="scenario-actions scenario-actions-inline">
@@ -784,14 +855,17 @@ export default function App() {
             </div>
           </section>
 
-          <SemesterPlan
-            plan={plan}
-            courseMap={catalog.courseMap}
-            roadmapCourseCodes={roadmapCourseCodes}
-            completedCodes={completedCodes}
-            maxCredits={maxCredits}
-            onSelectCourse={setSelectedCourseCode}
-          />
+          <div ref={timelineRef}>
+            <SemesterPlan
+              plan={plan}
+              courseMap={catalog.courseMap}
+              roadmapCourseCodes={roadmapCourseCodes}
+              completedCodes={completedCodes}
+              maxCredits={maxCredits}
+              onSelectCourse={setSelectedCourseCode}
+              onPlanEdit={setEditedSemesters}
+            />
+          </div>
         </section>
       </main>
 

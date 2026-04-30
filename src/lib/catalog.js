@@ -108,6 +108,7 @@ export function createCatalog(rawCatalog) {
 
   return {
     source: rawCatalog.source,
+    planningStartTerm: rawCatalog.planningStartTerm ?? null,
     program: rawCatalog.program,
     courses,
     courseMap,

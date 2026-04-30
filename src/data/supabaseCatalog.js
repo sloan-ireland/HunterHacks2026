@@ -196,7 +196,8 @@ export async function fetchSupabaseCatalogDataset() {
   const recentTermIds = new Set(recentTerms.map((term) => term.term_id));
   const termById = Object.fromEntries(terms.map((row) => [row.term_id, row]));
   const subjectById = Object.fromEntries(subjects.map((row) => [row.subject_id, row]));
-  const sectionsByCourseId = sections.reduce((accumulator, row) => {
+  const recentSections = sections.filter((row) => recentTermIds.has(row.term_id));
+  const sectionsByCourseId = (recentSections.length ? recentSections : sections).reduce((accumulator, row) => {
     accumulator[row.course_id] ??= [];
     accumulator[row.course_id].push(row);
     return accumulator;
@@ -213,7 +214,8 @@ export async function fetchSupabaseCatalogDataset() {
 
   const filteredCourses = courses.filter((row) => {
     const matchesInstitution = hunterInstitution ? row.institution_id === hunterInstitution.institution_id : true;
-    return matchesInstitution && isUndergraduateCareer(row.career);
+    const matchesRecentTerm = recentTermIds.size ? recentTermIds.has(row.term_id) : true;
+    return matchesInstitution && matchesRecentTerm && isUndergraduateCareer(row.career);
   });
   const visibleCourses = filteredCourses.length
     ? filteredCourses
@@ -351,6 +353,12 @@ export async function fetchSupabaseCatalogDataset() {
       implementation: "Live Supabase catalog dataset",
       programUrl: mockHunterCsPlaceholder.source.programUrl,
     },
+    planningStartTerm: recentTerms[0]
+      ? {
+          season: normalizeSeason(recentTerms[0].season) || "fall",
+          year: Number(recentTerms[0].year) || new Date().getFullYear(),
+        }
+      : null,
     program: {
       ...mockHunterCsPlaceholder.program,
       longName: "Computer Science BA with live Supabase catalog",
